@@ -1,70 +1,139 @@
-# Getting Started with Create React App
+# Smart Plant Watering Irrigation System - Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React-based frontend for the Smart Plant Watering Irrigation System that helps users monitor and control their plants' watering needs.
 
-## Available Scripts
+## Project Overview
 
-In the project directory, you can run:
+This application provides a user-friendly dashboard interface for the Smart Plant Watering Irrigation System, allowing users to:
+- Monitor soil moisture levels for multiple plants
+- Track watering schedules and history
+- View plant health status
+- Water plants manually through the interface
+- Track plant location and current conditions
 
-### `npm start`
+## Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Dashboard Screen
+- **System Overview**: Quick statistics including total plants, healthy plants, plants needing attention, and average moisture level
+- **Plant Status Cards**: Individual cards for each plant showing:
+  - Plant name and location
+  - Current soil moisture level (with color-coded indicators)
+  - Health status (Healthy or Needs Attention)
+  - Last watering time
+  - Watering schedule
+  - Water Now button for manual watering
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Dynamic Data Display
+- Uses React state and mock data to simulate real system data
+- Responsive grid layout that adapts to different screen sizes
+- Real-time status updates and calculations
 
-### `npm test`
+### Semantic HTML
+- Proper use of `<header>`, `<main>`, `<section>`, `<article>`, and `<footer>` tags
+- Semantic elements for better accessibility and SEO
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### CSS Styling
+- Modern, responsive design with:
+  - Gradient backgrounds
+  - Smooth transitions and hover effects
+  - Mobile-responsive grid layouts
+  - Color-coded status indicators
+  - Accessibility-focused design
 
-### `npm run build`
+## Getting Started
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Prerequisites
+- Node.js (v14 or higher)
+- npm or yarn
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Installation
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Clone the repository:
+```bash
+git clone <your-repository-url>
+cd smart-plant-watering
+```
 
-### `npm run eject`
+2. Install dependencies:
+```bash
+npm install
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Running the Application
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Start the development server:
+```bash
+npm start
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+The application will open in your browser at `http://localhost:3000`
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Building for Production
 
-## Learn More
+```bash
+npm run build
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+This creates an optimized production build in the `build` folder.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Project Structure
 
-### Code Splitting
+```
+smart-plant-watering/
+├── src/
+│   ├── components/
+│   │   └── Dashboard.jsx          # Main dashboard component
+│   ├── styles/
+│   │   └── Dashboard.css          # Dashboard styling
+│   ├── App.js                     # Main App component
+│   ├── App.css                    # App styling
+│   ├── index.js                   # React entry point
+│   └── index.css                  # Global styles
+├── public/
+│   └── index.html                 # HTML template
+├── package.json                   # Project dependencies
+└── README.md                      # This file
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Data Structure
 
-### Analyzing the Bundle Size
+The dashboard uses the following plant data structure:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```javascript
+{
+  id: number,
+  name: string,
+  moistureLevel: number (0-100),
+  status: "Healthy" | "Needs Attention",
+  lastWatered: string,
+  location: string,
+  wateringSchedule: string
+}
+```
 
-### Making a Progressive Web App
+## Future Enhancements
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- Connect to backend API for real plant data
+- Implement user authentication
+- Add plant watering history graphs
+- Create settings/configuration screen
+- Add notifications for watering reminders
+- Implement plant-specific care guides
 
-### Advanced Configuration
+## Technologies Used
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- React 18.x
+- CSS3 with Flexbox and Grid
+- Node.js/npm
 
-### Deployment
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+This project is part of the Smart Plant Watering Irrigation System initiative.
 
-### `npm run build` fails to minify
+## Created
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+February 2026
+
+---
+
+**Note**: This is the frontend React application. Make sure to have the backend API server running for full system functionality.
