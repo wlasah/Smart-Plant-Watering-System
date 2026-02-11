@@ -10,8 +10,7 @@ const Dashboard = () => {
       moistureLevel: 65,
       status: 'Healthy',
       lastWatered: '2 hours ago',
-      location: 'Living Room',
-      wateringSchedule: 'Every 7 days'
+      location: 'Living Room'
     },
     {
       id: 2,
@@ -19,8 +18,7 @@ const Dashboard = () => {
       moistureLevel: 40,
       status: 'Healthy',
       lastWatered: '5 days ago',
-      location: 'Bedroom',
-      wateringSchedule: 'Every 14 days'
+      location: 'Bedroom'
     },
     {
       id: 3,
@@ -28,8 +26,7 @@ const Dashboard = () => {
       moistureLevel: 85,
       status: 'Needs Attention',
       lastWatered: '1 hour ago',
-      location: 'Kitchen',
-      wateringSchedule: 'Every 5 days'
+      location: 'Kitchen'
     },
     {
       id: 4,
@@ -37,8 +34,7 @@ const Dashboard = () => {
       moistureLevel: 55,
       status: 'Healthy',
       lastWatered: '3 days ago',
-      location: 'Office',
-      wateringSchedule: 'Every 10 days'
+      location: 'Office'
     }
   ];
 
@@ -115,11 +111,6 @@ const Dashboard = () => {
                   <label>Last Watered</label>
                   <p>{plant.lastWatered}</p>
                 </div>
-
-                <div className="info-item">
-                  <label>Watering Schedule</label>
-                  <p>{plant.wateringSchedule}</p>
-                </div>
               </div>
 
               <div className="moisture-section">
@@ -142,9 +133,7 @@ const Dashboard = () => {
         </article>
       </section>
 
-      <footer className="dashboard-footer">
-        <p>&copy; 2026 Smart Plant Watering Irrigation System. All rights reserved.</p>
-      </footer>
+ 
     </main>
   );
 };

@@ -12,26 +12,26 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+  background: #f8fafb;
   min-height: 100vh;
 }
 
 .dashboard {
   max-width: 1600px;
   margin: 0 auto;
-  padding: 32px 24px;
-  background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+  padding: 40px 24px;
+  background: #f8fafb;
   min-height: 100vh;
 }
 
 /* Header */
 .dashboard-header {
-  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #1a7f7e 0%, #2d9e9d 100%);
   color: white;
-  padding: 48px 40px;
-  border-radius: 16px;
+  padding: 56px 48px;
+  border-radius: 14px;
   margin-bottom: 48px;
-  box-shadow: 0 10px 30px rgba(6, 182, 212, 0.2);
+  box-shadow: 0 8px 24px rgba(26, 127, 126, 0.15);
   text-align: center;
 }
 
@@ -43,8 +43,8 @@ body {
 }
 
 .dashboard-header p {
-  font-size: 1.1rem;
-  opacity: 0.9;
+  font-size: 1.05rem;
+  opacity: 0.95;
   font-weight: 400;
 }
 
@@ -60,32 +60,31 @@ body {
   background: white;
   padding: 28px;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   text-align: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid #e0f7ff;
+  border: 1px solid #e5e7eb;
 }
 
 .overview-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(6, 182, 212, 0.15);
-  border-color: #06b6d4;
-  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(26, 127, 126, 0.12);
+  border-color: #1a7f7e;
 }
 
 .overview-card h3 {
-  color: #0c7a8b;
-  font-size: 0.9rem;
+  color: #6b7280;
+  font-size: 0.85rem;
   margin-bottom: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
 }
 
 .overview-value {
   font-size: 2.8rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #0ea5e9 0%, #0c7a8b 100%);
+  background: linear-gradient(135deg, #1a7f7e 0%, #2d9e9d 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -99,7 +98,7 @@ body {
 
 .plants-section h2 {
   font-size: 2rem;
-  color: #0c7a8b;
+  color: #1f2937;
   margin-bottom: 28px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -115,11 +114,11 @@ body {
 /* Plant Card */
 .plant-card {
   background: white;
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 28px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid #e0f7ff;
+  border: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -132,18 +131,17 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #10b981, #06b6d4);
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #1a7f7e);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s ease;
 }
 
 .plant-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 16px 32px rgba(6, 182, 212, 0.15);
-  border-color: #06b6d4;
-  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(26, 127, 126, 0.12);
+  border-color: #1a7f7e;
 }
 
 .plant-card:hover::before {
@@ -155,13 +153,13 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  border-bottom: 2px solid #e0f7ff;
+  border-bottom: 1px solid #e5e7eb;
   padding-bottom: 16px;
 }
 
 .plant-header h3 {
-  font-size: 1.6rem;
-  color: #0c7a8b;
+  font-size: 1.5rem;
+  color: #1f2937;
   font-weight: 700;
   letter-spacing: -0.3px;
 }
@@ -184,7 +182,7 @@ body {
   gap: 16px;
   margin-bottom: 24px;
   padding: 20px;
-  background: #f0f9ff;
+  background: #f3f4f6;
   border-radius: 10px;
 }
 
@@ -194,8 +192,8 @@ body {
 }
 
 .info-item label {
-  font-size: 0.8rem;
-  color: #0c7a8b;
+  font-size: 0.75rem;
+  color: #6b7280;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -203,8 +201,8 @@ body {
 }
 
 .info-item p {
-  font-size: 1rem;
-  color: #0c5a6b;
+  font-size: 0.95rem;
+  color: #1f2937;
   font-weight: 500;
 }
 
@@ -212,14 +210,14 @@ body {
 .moisture-section {
   margin-bottom: 24px;
   padding: 20px;
-  background: #f0f9ff;
+  background: #f3f4f6;
   border-radius: 10px;
 }
 
 .moisture-section label {
   display: block;
-  font-size: 0.8rem;
-  color: #0c7a8b;
+  font-size: 0.75rem;
+  color: #6b7280;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -227,13 +225,13 @@ body {
 }
 
 .moisture-bar-container {
-  background-color: #cffafe;
+  background-color: #e5e7eb;
   border-radius: 8px;
   height: 24px;
   overflow: hidden;
   margin-bottom: 10px;
-  border: 1px solid #a5f3fc;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #d1d5db;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .moisture-bar-fill {
@@ -245,14 +243,14 @@ body {
 .moisture-value {
   display: block;
   text-align: right;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: #0c7a8b;
+  color: #1f2937;
 }
 
 /* Water Button */
 .water-button {
-  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #1a7f7e 0%, #2d9e9d 100%);
   color: white;
   padding: 14px 24px;
   border: none;
@@ -262,27 +260,27 @@ body {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: auto;
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+  box-shadow: 0 4px 12px rgba(26, 127, 126, 0.25);
   letter-spacing: 0.3px;
 }
 
 .water-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(6, 182, 212, 0.4);
-  background: linear-gradient(135deg, #0d97d8 0%, #0a9fc0 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(26, 127, 126, 0.35);
+  background: linear-gradient(135deg, #15696a 0%, #25868a 100%);
 }
 
 .water-button:active {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(26, 127, 126, 0.25);
 }
 
 /* Footer */
 .dashboard-footer {
   text-align: center;
-  color: #0c7a8b;
+  color: #6b7280;
   padding: 28px;
-  border-top: 1px solid #e0f7ff;
+  border-top: 1px solid #e5e7eb;
   margin-top: 48px;
   font-size: 0.9rem;
   font-weight: 500;
