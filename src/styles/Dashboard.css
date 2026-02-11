@@ -12,7 +12,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f7fa;
+  background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
   min-height: 100vh;
 }
 
@@ -20,18 +20,18 @@ body {
   max-width: 1600px;
   margin: 0 auto;
   padding: 32px 24px;
-  background-color: #f5f7fa;
+  background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
   min-height: 100vh;
 }
 
 /* Header */
 .dashboard-header {
-  background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
   color: white;
   padding: 48px 40px;
   border-radius: 16px;
   margin-bottom: 48px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px rgba(6, 182, 212, 0.2);
   text-align: center;
 }
 
@@ -44,7 +44,7 @@ body {
 
 .dashboard-header p {
   font-size: 1.1rem;
-  opacity: 0.85;
+  opacity: 0.9;
   font-weight: 400;
 }
 
@@ -60,20 +60,21 @@ body {
   background: white;
   padding: 28px;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   text-align: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid #e8eef5;
+  border: 2px solid #e0f7ff;
 }
 
 .overview-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-  border-color: #1a365d;
+  box-shadow: 0 12px 24px rgba(6, 182, 212, 0.15);
+  border-color: #06b6d4;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
 }
 
 .overview-card h3 {
-  color: #718096;
+  color: #0c7a8b;
   font-size: 0.9rem;
   margin-bottom: 12px;
   font-weight: 600;
@@ -84,7 +85,10 @@ body {
 .overview-value {
   font-size: 2.8rem;
   font-weight: 700;
-  color: #1a365d;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0c7a8b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1;
 }
 
@@ -95,7 +99,7 @@ body {
 
 .plants-section h2 {
   font-size: 2rem;
-  color: #1a365d;
+  color: #0c7a8b;
   margin-bottom: 28px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -113,12 +117,13 @@ body {
   background: white;
   border-radius: 14px;
   padding: 28px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid #e8eef5;
+  border: 2px solid #e0f7ff;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 .plant-card::before {
@@ -128,7 +133,7 @@ body {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #10b981, #3b82f6);
+  background: linear-gradient(90deg, #10b981, #06b6d4);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s ease;
@@ -136,8 +141,9 @@ body {
 
 .plant-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
-  border-color: #1a365d;
+  box-shadow: 0 16px 32px rgba(6, 182, 212, 0.15);
+  border-color: #06b6d4;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
 }
 
 .plant-card:hover::before {
@@ -149,13 +155,13 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  border-bottom: 2px solid #f0f4f8;
+  border-bottom: 2px solid #e0f7ff;
   padding-bottom: 16px;
 }
 
 .plant-header h3 {
   font-size: 1.6rem;
-  color: #1a365d;
+  color: #0c7a8b;
   font-weight: 700;
   letter-spacing: -0.3px;
 }
@@ -178,7 +184,7 @@ body {
   gap: 16px;
   margin-bottom: 24px;
   padding: 20px;
-  background: #f8fafb;
+  background: #f0f9ff;
   border-radius: 10px;
 }
 
@@ -189,7 +195,7 @@ body {
 
 .info-item label {
   font-size: 0.8rem;
-  color: #718096;
+  color: #0c7a8b;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -198,7 +204,7 @@ body {
 
 .info-item p {
   font-size: 1rem;
-  color: #2d3748;
+  color: #0c5a6b;
   font-weight: 500;
 }
 
@@ -206,14 +212,14 @@ body {
 .moisture-section {
   margin-bottom: 24px;
   padding: 20px;
-  background: #f8fafb;
+  background: #f0f9ff;
   border-radius: 10px;
 }
 
 .moisture-section label {
   display: block;
   font-size: 0.8rem;
-  color: #718096;
+  color: #0c7a8b;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -221,12 +227,12 @@ body {
 }
 
 .moisture-bar-container {
-  background-color: #e2e8f0;
+  background-color: #cffafe;
   border-radius: 8px;
   height: 24px;
   overflow: hidden;
   margin-bottom: 10px;
-  border: 1px solid #cbd5e0;
+  border: 1px solid #a5f3fc;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -241,12 +247,12 @@ body {
   text-align: right;
   font-size: 1rem;
   font-weight: 600;
-  color: #2d3748;
+  color: #0c7a8b;
 }
 
 /* Water Button */
 .water-button {
-  background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
   color: white;
   padding: 14px 24px;
   border: none;
@@ -256,27 +262,27 @@ body {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: auto;
-  box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
   letter-spacing: 0.3px;
 }
 
 .water-button:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(26, 54, 93, 0.3);
-  background: linear-gradient(135deg, #0f2744 0%, #1d2534 100%);
+  box-shadow: 0 8px 20px rgba(6, 182, 212, 0.4);
+  background: linear-gradient(135deg, #0d97d8 0%, #0a9fc0 100%);
 }
 
 .water-button:active {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
 }
 
 /* Footer */
 .dashboard-footer {
   text-align: center;
-  color: #718096;
+  color: #0c7a8b;
   padding: 28px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #e0f7ff;
   margin-top: 48px;
   font-size: 0.9rem;
   font-weight: 500;
