@@ -7,145 +7,179 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f7fa;
   min-height: 100vh;
 }
 
 .dashboard {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 20px;
-  background-color: #f8f9fa;
+  padding: 32px 24px;
+  background-color: #f5f7fa;
   min-height: 100vh;
 }
 
 /* Header */
 .dashboard-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
   color: white;
-  padding: 40px 30px;
-  border-radius: 12px;
-  margin-bottom: 40px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 48px 40px;
+  border-radius: 16px;
+  margin-bottom: 48px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   text-align: center;
 }
 
 .dashboard-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
+  font-size: 2.8rem;
+  margin-bottom: 12px;
   font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
 .dashboard-header p {
   font-size: 1.1rem;
-  opacity: 0.9;
+  opacity: 0.85;
+  font-weight: 400;
 }
 
 /* System Overview Section */
 .system-overview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 40px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 48px;
 }
 
 .overview-card {
   background: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #e8eef5;
 }
 
 .overview-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  border-color: #1a365d;
 }
 
 .overview-card h3 {
-  color: #666;
-  font-size: 0.95rem;
-  margin-bottom: 10px;
+  color: #718096;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .overview-value {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: 700;
-  color: #667eea;
+  color: #1a365d;
+  line-height: 1;
 }
 
 /* Plants Section */
 .plants-section {
-  margin-bottom: 40px;
+  margin-bottom: 48px;
 }
 
 .plants-section h2 {
-  font-size: 1.8rem;
-  color: #333;
-  margin-bottom: 25px;
+  font-size: 2rem;
+  color: #1a365d;
+  margin-bottom: 28px;
   font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
 .plants-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 28px;
   list-style: none;
 }
 
 /* Plant Card */
 .plant-card {
   background: white;
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #e8eef5;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.plant-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #10b981, #3b82f6);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 
 .plant-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border-color: #667eea;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
+  border-color: #1a365d;
+}
+
+.plant-card:hover::before {
+  transform: scaleX(1);
 }
 
 .plant-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 15px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #f0f4f8;
+  padding-bottom: 16px;
 }
 
 .plant-header h3 {
-  font-size: 1.5rem;
-  color: #333;
+  font-size: 1.6rem;
+  color: #1a365d;
   font-weight: 700;
+  letter-spacing: -0.3px;
 }
 
 .status-badge {
-  padding: 6px 12px;
+  padding: 8px 14px;
   color: white;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  border-radius: 24px;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: capitalize;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 /* Plant Info */
 .plant-info {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #f8fafb;
+  border-radius: 10px;
 }
 
 .info-item {
@@ -154,146 +188,226 @@ body {
 }
 
 .info-item label {
-  font-size: 0.85rem;
-  color: #999;
+  font-size: 0.8rem;
+  color: #718096;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 5px;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
 }
 
 .info-item p {
   font-size: 1rem;
-  color: #444;
+  color: #2d3748;
   font-weight: 500;
 }
 
 /* Moisture Section */
 .moisture-section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #f8fafb;
+  border-radius: 10px;
 }
 
 .moisture-section label {
   display: block;
-  font-size: 0.85rem;
-  color: #999;
+  font-size: 0.8rem;
+  color: #718096;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 10px;
+  letter-spacing: 0.8px;
+  margin-bottom: 12px;
 }
 
 .moisture-bar-container {
-  background-color: #e5e7eb;
-  border-radius: 10px;
-  height: 20px;
+  background-color: #e2e8f0;
+  border-radius: 8px;
+  height: 24px;
   overflow: hidden;
-  margin-bottom: 8px;
-  border: 1px solid #d1d5db;
+  margin-bottom: 10px;
+  border: 1px solid #cbd5e0;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .moisture-bar-fill {
   height: 100%;
-  transition: width 0.3s ease;
-  border-radius: 10px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
 }
 
 .moisture-value {
   display: block;
   text-align: right;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: #667eea;
+  color: #2d3748;
 }
 
 /* Water Button */
 .water-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
   color: white;
-  padding: 12px 20px;
+  padding: 14px 24px;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: auto;
+  box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2);
+  letter-spacing: 0.3px;
 }
 
 .water-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(26, 54, 93, 0.3);
+  background: linear-gradient(135deg, #0f2744 0%, #1d2534 100%);
 }
 
 .water-button:active {
-  transform: translateY(0);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2);
 }
 
 /* Footer */
 .dashboard-footer {
   text-align: center;
-  color: #666;
-  padding: 20px;
-  border-top: 1px solid #e5e7eb;
-  margin-top: 40px;
+  color: #718096;
+  padding: 28px;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 48px;
   font-size: 0.9rem;
+  font-weight: 500;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .dashboard {
+    padding: 20px 16px;
+  }
+
+  .dashboard-header {
+    padding: 40px 24px;
+    margin-bottom: 32px;
+  }
+
   .dashboard-header h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
+  }
+
+  .dashboard-header p {
+    font-size: 1rem;
   }
 
   .system-overview {
     grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .overview-card {
+    padding: 20px;
   }
 
   .plant-info {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .plants-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
 
-  .overview-card {
-    padding: 15px;
+  .plants-section h2 {
+    font-size: 1.6rem;
+    margin-bottom: 20px;
   }
 
   .plant-card {
-    padding: 15px;
+    padding: 20px;
   }
 }
 
 @media (max-width: 480px) {
   .dashboard {
-    padding: 10px;
+    padding: 12px 12px;
   }
 
   .dashboard-header {
-    padding: 20px 15px;
+    padding: 24px 16px;
+    margin-bottom: 24px;
+    border-radius: 12px;
   }
 
   .dashboard-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
+    margin-bottom: 8px;
   }
 
   .dashboard-header p {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 
   .system-overview {
     grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .overview-card {
+    padding: 16px;
+  }
+
+  .overview-value {
+    font-size: 2.2rem;
+  }
+
+  .plants-section h2 {
+    font-size: 1.4rem;
+    margin-bottom: 16px;
   }
 
   .plant-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+
+  .plant-header h3 {
+    font-size: 1.3rem;
   }
 
   .status-badge {
     align-self: flex-start;
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+
+  .plant-info {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .moisture-section {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .water-button {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
+
+  .dashboard-footer {
+    padding: 20px;
+    font-size: 0.85rem;
+    margin-top: 32px;
   }
 }
