@@ -4,6 +4,23 @@ import '../styles/PlantCard.css';
 const PlantCard = ({ plant, onWaterClick }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Never';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
   const getMoistureColor = (level) => {
     if (level === 100) return '#10b981'; // green at 100%
     if (level >= 50 && level < 100) return '#3b82f6'; // blue 50-80%
@@ -35,7 +52,7 @@ const PlantCard = ({ plant, onWaterClick }) => {
 
         <div className="plant-card__info-item">
           <label>Last Watered</label>
-          <p>{plant.lastWatered}</p>
+          <p>{formatDate(plant.last_watered)}</p>
         </div>
       </div>
 

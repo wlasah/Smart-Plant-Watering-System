@@ -22,52 +22,16 @@ const Dashboard = () => {
     const fetchPlants = async () => {
       try {
         setLoading(true);
-        // TODO: Replace with your XAMPP API endpoint
-        // const response = await fetch('http://localhost:5000/api/plants');
-        // const data = await response.json();
-        // setPlants(data);
+        const response = await fetch('http://localhost:5000/api/plants');
+        const data = await response.json();
         
-        // Temporary: Using mock data for testing UI
-        const mockData = [
-          {
-            id: 1,
-            name: 'Monstera',
-            moisture_level: 75,
-            status: 'Healthy',
-            last_watered: '2 hours ago',
-            location: 'Living Room'
-          },
-          {
-            id: 2,
-            name: 'Snake Plant',
-            moisture_level: 40,
-            status: 'Needs Attention',
-            last_watered: '5 days ago',
-            location: 'Bedroom'
-          },
-          {
-            id: 3,
-            name: 'Pothos',
-            moisture_level: 100,
-            status: 'Needs Attention',
-            last_watered: '1 hour ago',
-            location: 'Kitchen'
-          },
-          {
-            id: 4,
-            name: 'Fiddle Leaf Fig',
-            moisture_level: 55,
-            status: 'Healthy',
-            last_watered: '3 days ago',
-            location: 'Office'
-          }
-        ];
-        // Transform data to match frontend format
-        const transformedData = mockData.map(plant => ({
+        // Transform data from snake_case to camelCase
+        const transformedData = data.map(plant => ({
           ...plant,
           moistureLevel: plant.moisture_level,
           lastWatered: plant.last_watered
         }));
+        
         setPlants(transformedData);
         setLoading(false);
       } catch (err) {
