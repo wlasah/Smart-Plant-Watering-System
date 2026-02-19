@@ -1,0 +1,84 @@
+/* StatsCard Component Styles */
+
+.stats-card {
+  background: white;
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid #e0f7ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.stats-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(6, 182, 212, 0.15);
+  border-color: #06b6d4;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+}
+
+.stats-card__icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.stats-card__content {
+  width: 100%;
+}
+
+.stats-card__title {
+  color: #0c7a8b;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stats-card__value {
+  font-size: 2.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0c7a8b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin: 0;
+}
+
+/* Color variants */
+.stats-card--healthy .stats-card__value {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stats-card--attention .stats-card__value {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stats-card--moisture .stats-card__value {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-card {
+    padding: 20px;
+  }
+
+  .stats-card__value {
+    font-size: 2.2rem;
+  }
+}

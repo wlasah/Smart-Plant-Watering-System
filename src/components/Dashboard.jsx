@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+import PlantCard from './PlantCard';
+import StatsCard from './StatsCard';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
   // Mock data for plants
-  const plants = [
+  const [plants] = useState([
     {
       id: 1,
       name: 'Monstera',
@@ -40,29 +42,42 @@ const Dashboard = () => {
       location: 'Office',
       wateringSchedule: 'Every 10 days'
     }
-  ];
+  ]);
 
-  // Calculate average moisture level
+  // State for interactive filtering
+  const [filterStatus, setFilterStatus] = useState('All');
+  const [wateredPlants, setWateredPlants] = useState(new Set());
+
+  // Calculate statistics
   const avgMoisture = Math.round(
     plants.reduce((sum, plant) => sum + plant.moistureLevel, 0) / plants.length
   );
-
-  // Count plants by status
   const healthyCount = plants.filter(p => p.status === 'Healthy').length;
   const needsAttentionCount = plants.filter(p => p.status === 'Needs Attention').length;
 
-  // Get status color
-  const getStatusColor = (status) => {
-    return status === 'Healthy' ? '#10b981' : '#f59e0b';
+  // Filter plants based on selected status
+  const filteredPlants = filterStatus === 'All'
+    ? plants
+    : plants.filter(p => p.status === filterStatus);
+
+  // Handle water plant interaction
+  const handleWaterClick = (plantId) => {
+    const newWateredPlants = new Set(wateredPlants);
+    if (newWateredPlants.has(plantId)) {
+      newWateredPlants.delete(plantId);
+    } else {
+      newWateredPlants.add(plantId);
+    }
+    setWateredPlants(newWateredPlants);
+    alert(`💧 Plant #${plantId} watered! Moisture updated.`);
   };
 
-  // Get moisture color
-  const getMoistureColor = (level) => {
-    if (level < 30) return '#ef4444';
-    if (level < 50) return '#f59e0b';
-    if (level < 70) return '#3b82f6';
-    return '#10b981';
-  };
+  // Filter button styles
+  const getFilterButtonStyle = (status) => ({
+    backgroundColor: filterStatus === status ? '#06b6d4' : '#e0f7ff',
+    color: filterStatus === status ? 'white' : '#0c7a8b',
+    borderColor: filterStatus === status ? '#06b6d4' : '#a5f3fc'
+  });
 
   return (
     <main className="dashboard">
@@ -71,73 +86,63 @@ const Dashboard = () => {
         <p>Monitor and control your plants' watering needs</p>
       </header>
 
+      {/* System Overview Section - Using StatsCard Component */}
       <section className="system-overview">
-        <div className="overview-card">
-          <h3>Total Plants</h3>
-          <p className="overview-value">{plants.length}</p>
-        </div>
-        <div className="overview-card">
-          <h3>Healthy Plants</h3>
-          <p className="overview-value" style={{ color: '#10b981' }}>{healthyCount}</p>
-        </div>
-        <div className="overview-card">
-          <h3>Need Attention</h3>
-          <p className="overview-value" style={{ color: '#f59e0b' }}>{needsAttentionCount}</p>
-        </div>
-        <div className="overview-card">
-          <h3>Avg Moisture</h3>
-          <p className="overview-value">{avgMoisture}%</p>
-        </div>
+        <StatsCard 
+          title="Total Plants" 
+          value={plants.length}
+          icon="🌱"
+        />
+        <StatsCard 
+          title="Healthy Plants" 
+          value={healthyCount}
+          color="healthy"
+          icon="✅"
+        />
+        <StatsCard 
+          title="Need Attention" 
+          value={needsAttentionCount}
+          color="attention"
+          icon="⚠️"
+        />
+        <StatsCard 
+          title="Avg Moisture" 
+          value={`${avgMoisture}%`}
+          color="moisture"
+          icon="💧"
+        />
       </section>
 
+      {/* Interactive Filter Section */}
+      <section className="filter-section">
+        <h2>Filter Plants</h2>
+        <div className="filter-buttons">
+          {['All', 'Healthy', 'Needs Attention'].map(status => (
+            <button
+              key={status}
+              className="filter-btn"
+              style={getFilterButtonStyle(status)}
+              onClick={() => setFilterStatus(status)}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
+        <p className="filter-info">
+          Showing {filteredPlants.length} of {plants.length} plants
+        </p>
+      </section>
+
+      {/* Plants Section - Using PlantCard Component */}
       <section className="plants-section">
         <h2>Plant Status</h2>
         <article className="plants-grid">
-          {plants.map((plant) => (
-            <div key={plant.id} className="plant-card">
-              <header className="plant-header">
-                <h3>{plant.name}</h3>
-                <span 
-                  className="status-badge"
-                  style={{ backgroundColor: getStatusColor(plant.status) }}
-                >
-                  {plant.status}
-                </span>
-              </header>
-
-              <div className="plant-info">
-                <div className="info-item">
-                  <label>Location</label>
-                  <p>{plant.location}</p>
-                </div>
-
-                <div className="info-item">
-                  <label>Last Watered</label>
-                  <p>{plant.lastWatered}</p>
-                </div>
-
-                <div className="info-item">
-                  <label>Watering Schedule</label>
-                  <p>{plant.wateringSchedule}</p>
-                </div>
-              </div>
-
-              <div className="moisture-section">
-                <label>Soil Moisture Level</label>
-                <div className="moisture-bar-container">
-                  <div 
-                    className="moisture-bar-fill"
-                    style={{
-                      width: `${plant.moistureLevel}%`,
-                      backgroundColor: getMoistureColor(plant.moistureLevel)
-                    }}
-                  ></div>
-                </div>
-                <span className="moisture-value">{plant.moistureLevel}%</span>
-              </div>
-
-              <button className="water-button">Water Now</button>
-            </div>
+          {filteredPlants.map((plant) => (
+            <PlantCard
+              key={plant.id}
+              plant={plant}
+              onWaterClick={handleWaterClick}
+            />
           ))}
         </article>
       </section>
