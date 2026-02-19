@@ -1,52 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PlantCard from './PlantCard';
 import StatsCard from './StatsCard';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
-  // Mock data for plants
-  const [plants] = useState([
-    {
-      id: 1,
-      name: 'Monstera',
-      moistureLevel: 65,
-      status: 'Healthy',
-      lastWatered: '2 hours ago',
-      location: 'Living Room',
-      wateringSchedule: 'Every 7 days'
-    },
-    {
-      id: 2,
-      name: 'Snake Plant',
-      moistureLevel: 40,
-      status: 'Healthy',
-      lastWatered: '5 days ago',
-      location: 'Bedroom',
-      wateringSchedule: 'Every 14 days'
-    },
-    {
-      id: 3,
-      name: 'Pothos',
-      moistureLevel: 85,
-      status: 'Needs Attention',
-      lastWatered: '1 hour ago',
-      location: 'Kitchen',
-      wateringSchedule: 'Every 5 days'
-    },
-    {
-      id: 4,
-      name: 'Fiddle Leaf Fig',
-      moistureLevel: 55,
-      status: 'Healthy',
-      lastWatered: '3 days ago',
-      location: 'Office',
-      wateringSchedule: 'Every 10 days'
-    }
-  ]);
+  // State for plants data (will be fetched from XAMPP/API)
+  const [plants, setPlants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // State for interactive filtering
   const [filterStatus, setFilterStatus] = useState('All');
   const [wateredPlants, setWateredPlants] = useState(new Set());
+
+  // Fetch plants from XAMPP backend API
+  useEffect(() => {
+    const fetchPlants = async () => {
+      try {
+        setLoading(true);
+        // TODO: Replace with your XAMPP API endpoint
+        // const response = await fetch('http://localhost:5000/api/plants');
+        // const data = await response.json();
+        // setPlants(data);
+        
+        // Temporary: Using mock data for testing UI
+        const mockData = [
+          {
+            id: 1,
+            name: 'Monstera',
+            moistureLevel: 75,
+            status: 'Healthy',
+            lastWatered: '2 hours ago',
+            location: 'Living Room'
+          },
+          {
+            id: 2,
+            name: 'Snake Plant',
+            moistureLevel: 40,
+            status: 'Needs Attention',
+            lastWatered: '5 days ago',
+            location: 'Bedroom'
+          },
+          {
+            id: 3,
+            name: 'Pothos',
+            moistureLevel: 100,
+            status: 'Needs Attention',
+            lastWatered: '1 hour ago',
+            location: 'Kitchen'
+          },
+          {
+            id: 4,
+            name: 'Fiddle Leaf Fig',
+            moistureLevel: 55,
+            status: 'Healthy',
+            lastWatered: '3 days ago',
+            location: 'Office'
+          }
+        ];
+        setPlants(mockData);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch plants data');
+        setLoading(false);
+        console.error('Error fetching plants:', err);
+      }
+    };
+
+    fetchPlants();
+  }, []);
 
   // Calculate statistics
   const avgMoisture = Math.round(
@@ -86,8 +108,22 @@ const Dashboard = () => {
         <p>Monitor and control your plants' watering needs</p>
       </header>
 
-      {/* System Overview Section - Using StatsCard Component */}
-      <section className="system-overview">
+      {loading && (
+        <div className="loading-message">
+          <p>Loading plants data...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="error-message">
+          <p>⚠️ {error}</p>
+        </div>
+      )}
+
+      {!loading && plants.length > 0 && (
+        <>
+          {/* System Overview Section - Using StatsCard Component */}
+          <section className="system-overview">
         <StatsCard 
           title="Total Plants" 
           value={plants.length}
@@ -146,6 +182,14 @@ const Dashboard = () => {
           ))}
         </article>
       </section>
+        </>
+      )}
+
+      {!loading && plants.length === 0 && (
+        <div className="empty-message">
+          <p>No plants found. Add your first plant to get started! 🌱</p>
+        </div>
+      )}
 
       <footer className="dashboard-footer">
         <p>&copy; 2026 Smart Plant Watering Irrigation System. All rights reserved.</p>

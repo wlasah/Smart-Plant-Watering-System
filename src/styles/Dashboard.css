@@ -164,6 +164,39 @@ body {
   margin: 0;
 }
 
+/* Loading, Error, and Empty States */
+.loading-message,
+.error-message,
+.empty-message {
+  background: white;
+  padding: 40px 28px;
+  border-radius: 14px;
+  margin-bottom: 48px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border: 2px solid #e0f7ff;
+  text-align: center;
+}
+
+.loading-message p,
+.empty-message p {
+  color: #0c7a8b;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.error-message {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.error-message p {
+  color: #b91c1c;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
 /* Plant Card */
 .plant-card {
   background: white;

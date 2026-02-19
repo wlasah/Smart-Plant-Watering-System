@@ -5,10 +5,10 @@ const PlantCard = ({ plant, onWaterClick }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getMoistureColor = (level) => {
-    if (level < 30) return '#ef4444';
-    if (level < 50) return '#f59e0b';
-    if (level < 70) return '#3b82f6';
-    return '#10b981';
+    if (level === 100) return '#10b981'; // green at 100%
+    if (level >= 50 && level < 100) return '#3b82f6'; // blue 50-80%
+    if (level > 0 && level < 50) return '#f59e0b'; // orange below 50%
+    return '#ef4444'; // red at 0%
   };
 
   const getStatusColor = (status) => {
@@ -36,11 +36,6 @@ const PlantCard = ({ plant, onWaterClick }) => {
         <div className="plant-card__info-item">
           <label>Last Watered</label>
           <p>{plant.lastWatered}</p>
-        </div>
-
-        <div className="plant-card__info-item">
-          <label>Watering Schedule</label>
-          <p>{plant.wateringSchedule}</p>
         </div>
       </div>
 
