@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PlantCard from './PlantCard';
 import StatsCard from './StatsCard';
+import AddPlantForm from './AddPlantForm';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
@@ -12,6 +13,9 @@ const Dashboard = () => {
   // State for interactive filtering
   const [filterStatus, setFilterStatus] = useState('All');
   const [wateredPlants, setWateredPlants] = useState(new Set());
+  
+  // State for add plant form
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Fetch plants from XAMPP backend API
   useEffect(() => {
@@ -28,37 +32,43 @@ const Dashboard = () => {
           {
             id: 1,
             name: 'Monstera',
-            moistureLevel: 75,
+            moisture_level: 75,
             status: 'Healthy',
-            lastWatered: '2 hours ago',
+            last_watered: '2 hours ago',
             location: 'Living Room'
           },
           {
             id: 2,
             name: 'Snake Plant',
-            moistureLevel: 40,
+            moisture_level: 40,
             status: 'Needs Attention',
-            lastWatered: '5 days ago',
+            last_watered: '5 days ago',
             location: 'Bedroom'
           },
           {
             id: 3,
             name: 'Pothos',
-            moistureLevel: 100,
+            moisture_level: 100,
             status: 'Needs Attention',
-            lastWatered: '1 hour ago',
+            last_watered: '1 hour ago',
             location: 'Kitchen'
           },
           {
             id: 4,
             name: 'Fiddle Leaf Fig',
-            moistureLevel: 55,
+            moisture_level: 55,
             status: 'Healthy',
-            lastWatered: '3 days ago',
+            last_watered: '3 days ago',
             location: 'Office'
           }
         ];
-        setPlants(mockData);
+        // Transform data to match frontend format
+        const transformedData = mockData.map(plant => ({
+          ...plant,
+          moistureLevel: plant.moisture_level,
+          lastWatered: plant.last_watered
+        }));
+        setPlants(transformedData);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch plants data');
@@ -101,12 +111,39 @@ const Dashboard = () => {
     borderColor: filterStatus === status ? '#06b6d4' : '#a5f3fc'
   });
 
+  // Handle new plant added from form
+  const handlePlantAdded = (newPlant) => {
+    // Transform data if coming from API
+    const transformedPlant = {
+      ...newPlant,
+      moistureLevel: newPlant.moisture_level || newPlant.moistureLevel,
+      lastWatered: newPlant.last_watered || new Date().toLocaleString()
+    };
+    setPlants(prev => [...prev, transformedPlant]);
+  };
+
   return (
     <main className="dashboard">
       <header className="dashboard-header">
-        <h1>Smart Plant Watering System</h1>
-        <p>Monitor and control your plants' watering needs</p>
+        <div className="header-content">
+          <h1>Smart Plant Watering System</h1>
+          <p>Monitor and control your plants' watering needs</p>
+        </div>
+        <button 
+          className="btn-add-plant"
+          onClick={() => setIsFormOpen(true)}
+          title="Add a new plant"
+        >
+          ➕ Add Plant
+        </button>
       </header>
+
+      {/* Add Plant Form Modal */}
+      <AddPlantForm 
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onPlantAdded={handlePlantAdded}
+      />
 
       {loading && (
         <div className="loading-message">
