@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Pages.css';
 
 const SettingsPage = () => {
-  const [settings, setSettings] = useState({
+  const defaultSettings = {
     systemName: 'My Garden',
     moistureThreshold: 40,
     alertNotifications: true,
@@ -10,6 +10,12 @@ const SettingsPage = () => {
     timezone: 'EST',
     theme: 'light',
     language: 'English'
+  };
+
+  const [settings, setSettings] = useState(() => {
+    // Load from localStorage on component mount
+    const saved = localStorage.getItem('plantSettings');
+    return saved ? JSON.parse(saved) : defaultSettings;
   });
 
   const [savedMessage, setSavedMessage] = useState('');
@@ -23,22 +29,16 @@ const SettingsPage = () => {
   };
 
   const handleSave = () => {
+    // Save to localStorage
+    localStorage.setItem('plantSettings', JSON.stringify(settings));
     setSavedMessage('✓ Settings saved successfully!');
     setTimeout(() => setSavedMessage(''), 3000);
-    // In a real app, this would save to backend/database
   };
 
   const handleReset = () => {
     if (window.confirm('Are you sure you want to reset all settings to default?')) {
-      setSettings({
-        systemName: 'My Garden',
-        moistureThreshold: 40,
-        alertNotifications: true,
-        autoWatering: false,
-        timezone: 'EST',
-        theme: 'light',
-        language: 'English'
-      });
+      setSettings(defaultSettings);
+      localStorage.setItem('plantSettings', JSON.stringify(defaultSettings));
       setSavedMessage('✓ Settings reset to defaults');
       setTimeout(() => setSavedMessage(''), 3000);
     }

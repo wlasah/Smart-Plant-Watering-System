@@ -42,9 +42,6 @@ const Dashboard = ({
         
         setPlants(transformedData);
         setFilteredPlants(transformedData);
-        if (onPlantsLoaded) {
-          onPlantsLoaded(transformedData);
-        }
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch plants data');
@@ -53,15 +50,8 @@ const Dashboard = ({
       }
     };
 
-    // Only fetch if no plants provided via props
-    if (!propPlants || propPlants.length === 0) {
-      fetchPlants();
-    } else {
-      setPlants(propPlants);
-      setFilteredPlants(propPlants);
-      setLoading(false);
-    }
-  }, [propPlants, onPlantsLoaded]);
+    fetchPlants();
+  }, []);
 
   // Calculate statistics
   const avgMoisture = Math.round(
@@ -76,24 +66,43 @@ const Dashboard = ({
   };
 
   // Handle water plant interaction
-  const handleWaterClick = (plantId) => {
-    if (onWater) {
-      onWater(plantId);
-    } else {
-      // Fallback if no onWater prop
-      const plant = plants.find(p => p.id === plantId);
-      if (plant) {
-        const updatedPlant = { ...plant, moistureLevel: Math.min(plant.moistureLevel + 30, 100) };
+  const handleWaterClick = async (plantId) => {
+    const plant = plants.find(p => p.id === plantId);
+    if (!plant) return;
+
+    const newMoisture = Math.min(plant.moistureLevel + 30, 100);
+    
+    try {
+      // Log watering event to backend
+      const response = await fetch(`http://localhost:5000/api/plants/${plantId}/water`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          moisture_before: plant.moistureLevel,
+          moisture_after: newMoisture
+        })
+      });
+
+      if (response.ok) {
+        // Update local state
+        const updatedPlant = { ...plant, moistureLevel: newMoisture };
         const updatedPlants = plants.map(p => p.id === plantId ? updatedPlant : p);
         setPlants(updatedPlants);
         setFilteredPlants(updatedPlants.filter(p => 
           filteredPlants.map(fp => fp.id).includes(p.id)
         ));
+        
+        if (onNotification) {
+          onNotification(`💧 ${plant.name} watered! Moisture: ${newMoisture}%`, 'success');
+        }
       }
-    }
-
-    if (onNotification) {
-      onNotification(`💧 Plant #${plantId} watered! Moisture updated.`, 'success');
+    } catch (err) {
+      console.error('Error watering plant:', err);
+      if (onNotification) {
+        onNotification('❌ Failed to log watering event', 'error');
+      }
     }
   };
 
@@ -220,6 +229,10 @@ const Dashboard = ({
               </div>
             )}
           </section>
+        </>
+      )}
+
+      {!loading && plants.length === 0 && (
         <div className="empty-message">
           <p>No plants found. Add your first plant to get started! 🌱</p>
         </div>

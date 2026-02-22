@@ -1,11 +1,20 @@
 import React, { useState, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import Dashboard from './components/Dashboard';
+
+// Components
+import Navigation from './components/Navigation';
+import NotificationToast from './components/NotificationToast';
+
+// Pages
+import DashboardPage from './pages/DashboardPage';
+import PlantCarePage from './pages/PlantCarePage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import SettingsPage from './pages/SettingsPage';
+import PlantDetailPage from './pages/PlantDetailPage';
+import NotFound from './pages/NotFound';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('dashboard');
-  const [selectedPlant, setSelectedPlant] = useState(null);
-  const [plants, setPlants] = useState([]);
   const [notification, setNotification] = useState({
     isVisible: false,
     message: '',
@@ -19,6 +28,9 @@ function App() {
       message,
       type
     });
+    setTimeout(() => {
+      closeNotification();
+    }, 3000);
   }, []);
 
   // Close notification helper
@@ -29,47 +41,35 @@ function App() {
     }));
   }, []);
 
-  // Handle navigation to plant detail page
-  const handleViewPlantDetail = (plant) => {
-    setSelectedPlant(plant);
-    setCurrentPage('detail');
-  };
-
-  // Handle water plant action
-  const handleWaterPlant = (plantId) => {
-    const plant = plants.find(p => p.id === plantId);
-    if (plant) {
-      // Update the plant's moisture level
-      const updatedPlants = plants.map(p => 
-        p.id === plantId 
-          ? { ...p, moistureLevel: Math.min(p.moistureLevel + 30, 100) }
-          : p
-      );
-      setPlants(updatedPlants);
-      showNotification(`💧 ${plant.name} watered! Moisture updated.`, 'success');
-    }
-  };
-
-  // Handle delete plant
-  const handleDeletePlant = (plantId) => {
-    const plant = plants.find(p => p.id === plantId);
-    if (plant) {
-      setPlants(plants.filter(p => p.id !== plantId));
-      showNotification(`🗑️ ${plant.name} has been removed`, 'info');
-      setCurrentPage('dashboard');
-    }
-  };
-
-  // Handle new plant added
-  const handlePlantAdded = (newPlant) => {
-    setPlants(prev => [...prev, newPlant]);
-    showNotification(`✅ ${newPlant.name} has been added!`, 'success');
-  };
+  const handleNotification = useCallback((message, type = 'success') => {
+    showNotification(message, type);
+  }, [showNotification]);
 
   return (
-    <div className="App">
-      <Dashboard />
-    </div>
+    <Router>
+      <div className="App">
+        <Navigation />
+        
+        <main className="app-main">
+          <Routes>
+            <Route path="/" element={<DashboardPage onNotification={handleNotification} />} />
+            <Route path="/plant-care" element={<PlantCarePage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/plant/:id" element={<PlantDetailPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+
+        {notification.isVisible && (
+          <NotificationToast 
+            message={notification.message} 
+            type={notification.type}
+            onClose={closeNotification}
+          />
+        )}
+      </div>
+    </Router>
   );
 }
 

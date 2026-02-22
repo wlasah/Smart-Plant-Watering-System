@@ -27,7 +27,7 @@ MySQL Database (XAMPP)
 1. Open phpMyAdmin: `http://localhost/phpmyadmin`
 2. Create new database named: `smart_plant_watering`
 
-3. Run this SQL to create the plants table:
+3. Run this SQL to create the tables:
 
 ```sql
 CREATE TABLE plants (
@@ -38,6 +38,15 @@ CREATE TABLE plants (
   status VARCHAR(50),
   last_watered TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE watering_history (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  plant_id INT NOT NULL,
+  watering_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  moisture_before INT,
+  moisture_after INT,
+  FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE CASCADE
 );
 
 -- Insert sample data
@@ -250,6 +259,7 @@ moisture_level = 0%       → RED (#ef4444)
 
 ## API Endpoints Available
 
+### Plant Management
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/plants` | Get all plants |
@@ -257,6 +267,13 @@ moisture_level = 0%       → RED (#ef4444)
 | POST | `/api/plants` | Create new plant |
 | PUT | `/api/plants/:id` | Update plant (water it) |
 | DELETE | `/api/plants/:id` | Delete plant |
+
+### Watering History Tracking
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/plants/:id/water` | Log watering event for a plant |
+| GET | `/api/plants/:id/history` | Get watering history for specific plant |
+| GET | `/api/watering-history` | Get all watering history (for analytics) |
 
 ---
 

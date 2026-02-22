@@ -2,9 +2,46 @@ import React, { useState, useEffect } from 'react';
 import StatsCard from '../components/StatsCard';
 import '../styles/AnalyticsPage.css';
 
-const AnalyticsPage = ({ plants }) => {
+const AnalyticsPage = () => {
+  const [plants, setPlants] = useState([]);
+  const [wateringHistory, setWateringHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedPlant, setSelectedPlant] = useState(null);
   const [timeRange, setTimeRange] = useState('week');
+
+  // Fetch plants and watering history from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch plants
+        const plantsResponse = await fetch('http://localhost:5000/api/plants');
+        const plantsData = await plantsResponse.json();
+        
+        // Transform data from snake_case to camelCase
+        const transformedData = plantsData.map(plant => ({
+          ...plant,
+          moistureLevel: plant.moisture_level,
+          lastWatered: plant.last_watered
+        }));
+        
+        setPlants(transformedData);
+        
+        // Fetch watering history
+        const historyResponse = await fetch('http://localhost:5000/api/watering-history');
+        const historyData = await historyResponse.json();
+        setWateringHistory(historyData);
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Calculate overall statistics
   const totalPlants = plants.length;
@@ -20,14 +57,36 @@ const AnalyticsPage = ({ plants }) => {
     ? Math.min(...plants.map(p => p.moistureLevel))
     : 0;
 
-  // Calculate water usage trend (mock data)
-  const waterUsageTrend = {
-    week: [45, 52, 48, 61, 55, 58, 62],
-    month: [450, 480, 520, 490, 515, 550, 480, 510, 495, 520, 505, 515, 540, 530],
-    year: [450, 520, 580, 620, 680, 750, 820, 790, 710, 650, 580, 500]
-  };
+  // Calculate water usage trend from real data
+  const getTrendData = () => {
+    const now = new Date();
+    let daysBack = 7; // default: week
+    let dataPoints = 7;
+    
+    if (timeRange === 'month') {
+      daysBack = 30;
+      dataPoints = 30;
+    } else if (timeRange === 'year') {
+      daysBack = 365;
+      dataPoints = 52;
+    }
 
-  const getTrendData = () => waterUsageTrend[timeRange];
+    const trendArray = new Array(dataPoints).fill(0);
+    
+    wateringHistory.forEach(event => {
+      const eventDate = new Date(event.watering_date);
+      const daysAgo = Math.floor((now - eventDate) / (1000 * 60 * 60 * 24));
+      
+      if (daysAgo < daysBack) {
+        const index = Math.floor(daysAgo / (daysBack / dataPoints));
+        if (index >= 0 && index < dataPoints) {
+          trendArray[dataPoints - 1 - index]++;
+        }
+      }
+    });
+    
+    return trendArray.map(count => Math.max(count * 10, 0)); // Scale for visual display
+  };
 
   // Calculate plant health distribution
   const healthDistribution = {
@@ -41,6 +100,9 @@ const AnalyticsPage = ({ plants }) => {
   plants.forEach(plant => {
     plantsByLocation[plant.location] = (plantsByLocation[plant.location] || 0) + 1;
   });
+
+  // Calculate total watering events
+  const totalWateringEvents = wateringHistory.length;
 
   return (
     <div className="analytics-page">
@@ -87,6 +149,12 @@ const AnalyticsPage = ({ plants }) => {
             value={`${minMoisture}%`}
             color="moisture"
             icon="📉"
+          />
+          <StatsCard 
+            title="Total Waterings" 
+            value={totalWateringEvents}
+            color="healthy"
+            icon="💦"
           />
         </div>
       </section>
