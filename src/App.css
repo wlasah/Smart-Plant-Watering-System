@@ -3,4 +3,83 @@
   padding: 0;
   background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
   min-height: 100vh;
+  position: relative;
 }
+
+/* Navigation Bar */
+.app-nav {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: white;
+  border-bottom: 2px solid #bae6fd;
+  padding: 0 20px;
+  display: flex;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.nav-btn {
+  padding: 16px 20px;
+  border: none;
+  background: none;
+  color: #0c4a6e;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  border-bottom: 3px solid transparent;
+  position: relative;
+}
+
+.nav-btn:hover {
+  color: #06b6d4;
+}
+
+.nav-btn.active {
+  color: #06b6d4;
+  border-bottom-color: #06b6d4;
+}
+
+.nav-back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: white;
+  border: 2px solid #06b6d4;
+  color: #06b6d4;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  z-index: 10;
+}
+
+.nav-back-btn:hover {
+  background-color: #06b6d4;
+  color: white;
+  transform: translateX(-4px);
+}
+
+/* Page Container */
+.page-container {
+  position: relative;
+  padding-top: 60px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-nav {
+    padding: 0 10px;
+    gap: 5px;
+  }
+
+  .nav-btn {
+    padding: 12px 15px;
+    font-size: 13px;
+  }
