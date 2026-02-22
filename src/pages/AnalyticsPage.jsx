@@ -1,226 +1,255 @@
 import React, { useState, useEffect } from 'react';
+import StatsCard from '../components/StatsCard';
 import '../styles/AnalyticsPage.css';
 
-const AnalyticsPage = () => {
-  const [plants, setPlants] = useState([]);
-  const [loading, setLoading] = useState(true);
+const AnalyticsPage = ({ plants }) => {
   const [selectedPlant, setSelectedPlant] = useState(null);
+  const [timeRange, setTimeRange] = useState('week');
 
-  useEffect(() => {
-    const fetchPlants = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('http://localhost:5000/api/plants');
-        const data = await response.json();
-        setPlants(data);
-        if (data.length > 0) {
-          setSelectedPlant(data[0].id || 0);
-        }
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching plants:', err);
-        setLoading(false);
-      }
-    };
+  // Calculate overall statistics
+  const totalPlants = plants.length;
+  const healthyPlants = plants.filter(p => p.status === 'Healthy').length;
+  const needsAttention = plants.filter(p => p.status === 'Needs Attention').length;
+  const avgMoisture = plants.length > 0 
+    ? Math.round(plants.reduce((sum, p) => sum + p.moistureLevel, 0) / plants.length)
+    : 0;
+  const maxMoisture = plants.length > 0 
+    ? Math.max(...plants.map(p => p.moistureLevel))
+    : 0;
+  const minMoisture = plants.length > 0 
+    ? Math.min(...plants.map(p => p.moistureLevel))
+    : 0;
 
-    fetchPlants();
-  }, []);
-
-  const getStatusStats = () => {
-    const healthy = plants.filter(p => p.status === 'Healthy').length;
-    const needsAttention = plants.filter(p => p.status === 'Needs Attention').length;
-    const total = plants.length;
-    return { healthy, needsAttention, total };
+  // Calculate water usage trend (mock data)
+  const waterUsageTrend = {
+    week: [45, 52, 48, 61, 55, 58, 62],
+    month: [450, 480, 520, 490, 515, 550, 480, 510, 495, 520, 505, 515, 540, 530],
+    year: [450, 520, 580, 620, 680, 750, 820, 790, 710, 650, 580, 500]
   };
 
-  const getAverageMoisture = () => {
-    if (plants.length === 0) return 0;
-    const sum = plants.reduce((acc, plant) => acc + (plant.moisture_level || 0), 0);
-    return Math.round(sum / plants.length);
+  const getTrendData = () => waterUsageTrend[timeRange];
+
+  // Calculate plant health distribution
+  const healthDistribution = {
+    excellent: plants.filter(p => p.moistureLevel >= 70 && p.moistureLevel <= 90).length,
+    goodCondition: plants.filter(p => p.moistureLevel >= 50 && p.moistureLevel < 70).length,
+    needsWatering: plants.filter(p => p.moistureLevel >= 30 && p.moistureLevel < 50).length,
+    critical: plants.filter(p => p.moistureLevel < 30).length
   };
 
-  const getMoistureDistribution = () => {
-    const ranges = {
-      '0-25%': 0,
-      '26-50%': 0,
-      '51-75%': 0,
-      '76-100%': 0
-    };
-
-    plants.forEach(plant => {
-      const moisture = plant.moisture_level || 0;
-      if (moisture <= 25) ranges['0-25%']++;
-      else if (moisture <= 50) ranges['26-50%']++;
-      else if (moisture <= 75) ranges['51-75%']++;
-      else ranges['76-100%']++;
-    });
-
-    return ranges;
-  };
-
-  const stats = getStatusStats();
-  const moistureDistribution = getMoistureDistribution();
-  const avgMoisture = getAverageMoisture();
-
-  if (loading) {
-    return <div className="analytics-loading">Loading analytics data...</div>;
-  }
+  const plantsByLocation = {};
+  plants.forEach(plant => {
+    plantsByLocation[plant.location] = (plantsByLocation[plant.location] || 0) + 1;
+  });
 
   return (
     <div className="analytics-page">
-      <div className="analytics-header">
+      <header className="analytics-header">
         <h1>📊 Analytics & Statistics</h1>
-        <p>Track your plants' health and performance metrics</p>
-      </div>
+        <p>Track plant health trends and water usage patterns</p>
+      </header>
 
-      <div className="analytics-container">
-        {/* Overview Cards */}
-        <section className="analytics-section">
-          <h2>Overview</h2>
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon">🌱</div>
-              <div className="stat-content">
-                <p className="stat-label">Total Plants</p>
-                <p className="stat-value">{stats.total}</p>
-              </div>
-            </div>
+      {/* Key Metrics Section */}
+      <section className="analytics-section">
+        <h2>Overall System Health</h2>
+        <div className="analytics-metrics-grid">
+          <StatsCard 
+            title="Total Plants" 
+            value={totalPlants}
+            icon="🌱"
+          />
+          <StatsCard 
+            title="Healthy" 
+            value={healthyPlants}
+            color="healthy"
+            icon="✅"
+          />
+          <StatsCard 
+            title="Attention Needed" 
+            value={needsAttention}
+            color="attention"
+            icon="⚠️"
+          />
+          <StatsCard 
+            title="Avg Moisture" 
+            value={`${avgMoisture}%`}
+            color="moisture"
+            icon="💧"
+          />
+          <StatsCard 
+            title="Max Moisture" 
+            value={`${maxMoisture}%`}
+            color="moisture"
+            icon="📈"
+          />
+          <StatsCard 
+            title="Min Moisture" 
+            value={`${minMoisture}%`}
+            color="moisture"
+            icon="📉"
+          />
+        </div>
+      </section>
 
-            <div className="stat-card">
-              <div className="stat-icon">✅</div>
-              <div className="stat-content">
-                <p className="stat-label">Healthy</p>
-                <p className="stat-value">{stats.healthy}</p>
-              </div>
-            </div>
+      {/* Water Usage Trend Section */}
+      <section className="analytics-section">
+        <div className="analytics-section-header">
+          <h2>Water Usage Trend</h2>
+          <div className="time-range-selector">
+            <button 
+              className={`time-btn ${timeRange === 'week' ? 'active' : ''}`}
+              onClick={() => setTimeRange('week')}
+            >
+              Week
+            </button>
+            <button 
+              className={`time-btn ${timeRange === 'month' ? 'active' : ''}`}
+              onClick={() => setTimeRange('month')}
+            >
+              Month
+            </button>
+            <button 
+              className={`time-btn ${timeRange === 'year' ? 'active' : ''}`}
+              onClick={() => setTimeRange('year')}
+            >
+              Year
+            </button>
+          </div>
+        </div>
 
-            <div className="stat-card">
-              <div className="stat-icon">⚠️</div>
-              <div className="stat-content">
-                <p className="stat-label">Needs Attention</p>
-                <p className="stat-value">{stats.needsAttention}</p>
-              </div>
-            </div>
+        <div className="analytics-chart">
+          <div className="chart-container">
+            <svg className="line-chart" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet">
+              {/* Y-axis line */}
+              <line x1="40" y1="20" x2="40" y2="260" stroke="#ccc" strokeWidth="2" />
+              
+              {/* X-axis line */}
+              <line x1="40" y1="260" x2="780" y2="260" stroke="#ccc" strokeWidth="2" />
 
-            <div className="stat-card">
-              <div className="stat-icon">💧</div>
-              <div className="stat-content">
-                <p className="stat-label">Avg Moisture</p>
-                <p className="stat-value">{avgMoisture}%</p>
-              </div>
+              {/* Grid lines and data points */}
+              {getTrendData().map((value, index) => {
+                const x = 80 + (index * (700 / (getTrendData().length - 1 || 1)));
+                const maxValue = Math.max(...getTrendData());
+                const y = 260 - (value / maxValue) * 230;
+                
+                return (
+                  <g key={index}>
+                    {/* Grid line */}
+                    <line x1="40" y1={y} x2="780" y2={y} stroke="#f0f0f0" strokeWidth="1" />
+                    
+                    {/* Data point circle */}
+                    <circle cx={x} cy={y} r="4" fill="#06b6d4" />
+                    
+                    {/* Value label */}
+                    <text x={x} y={y - 12} textAnchor="middle" fontSize="11" fill="#666">
+                      {value}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Connecting line */}
+              {getTrendData().map((value, index) => {
+                if (index === 0) return null;
+                const x1 = 80 + ((index - 1) * (700 / (getTrendData().length - 1 || 1)));
+                const x2 = 80 + (index * (700 / (getTrendData().length - 1 || 1)));
+                const maxValue = Math.max(...getTrendData());
+                const y1 = 260 - (getTrendData()[index - 1] / maxValue) * 230;
+                const y2 = 260 - (value / maxValue) * 230;
+                
+                return (
+                  <line key={`line-${index}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#06b6d4" strokeWidth="2" />
+                );
+              })}
+
+              {/* Y-axis labels */}
+              <text x="25" y="265" fontSize="11" fill="#666">0</text>
+              <text x="15" y="25" fontSize="11" fill="#666">{Math.max(...getTrendData())}</text>
+            </svg>
+          </div>
+          <p className="chart-label">Water Usage (ml) - {timeRange}</p>
+        </div>
+      </section>
+
+      {/* Health Distribution Section */}
+      <section className="analytics-section">
+        <h2>Plant Health Distribution</h2>
+        <div className="health-distribution">
+          <div className="health-item">
+            <div className="health-color excellent"></div>
+            <div className="health-info">
+              <span>Excellent (70-90%)</span>
+              <strong>{healthDistribution.excellent} plants</strong>
             </div>
           </div>
-        </section>
+          <div className="health-item">
+            <div className="health-color good"></div>
+            <div className="health-info">
+              <span>Good (50-70%)</span>
+              <strong>{healthDistribution.goodCondition} plants</strong>
+            </div>
+          </div>
+          <div className="health-item">
+            <div className="health-color warning"></div>
+            <div className="health-info">
+              <span>Needs Watering (30-50%)</span>
+              <strong>{healthDistribution.needsWatering} plants</strong>
+            </div>
+          </div>
+          <div className="health-item">
+            <div className="health-color critical"></div>
+            <div className="health-info">
+              <span>Critical (&lt;30%)</span>
+              <strong>{healthDistribution.critical} plants</strong>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        {/* Moisture Distribution */}
+      {/* Plants by Location Section */}
+      {Object.keys(plantsByLocation).length > 0 && (
         <section className="analytics-section">
-          <h2>Moisture Level Distribution</h2>
-          <div className="distribution-chart">
-            {Object.entries(moistureDistribution).map(([range, count]) => (
-              <div key={range} className="distribution-bar-wrapper">
-                <label>{range}</label>
-                <div className="distribution-bar">
-                  <div
-                    className="bar-fill"
-                    style={{
-                      width: `${stats.total > 0 ? (count / stats.total) * 100 : 0}%`,
-                      backgroundColor: getMoistureColor(range)
-                    }}
-                  >
-                    {count > 0 ? count : ''}
-                  </div>
+          <h2>Plants by Location</h2>
+          <div className="location-breakdown">
+            {Object.entries(plantsByLocation).map(([location, count]) => (
+              <div key={location} className="location-item">
+                <span className="location-name">📍 {location}</span>
+                <div className="location-bar">
+                  <div 
+                    className="location-bar-fill" 
+                    style={{ width: `${(count / totalPlants) * 100}%` }}
+                  ></div>
                 </div>
+                <span className="location-count">{count} plants</span>
               </div>
             ))}
           </div>
         </section>
+      )}
 
-        {/* Plant Details */}
-        <section className="analytics-section">
-          <h2>Plant Details</h2>
-          {plants.length === 0 ? (
-            <p className="no-data">No plants found. Add a plant to see analytics.</p>
-          ) : (
-            <div className="plants-table">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Plant Name</th>
-                    <th>Location</th>
-                    <th>Moisture Level</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {plants.map((plant, index) => (
-                    <tr key={plant.id || index}>
-                      <td>{plant.name}</td>
-                      <td>{plant.location}</td>
-                      <td>
-                        <div className="moisture-indicator">
-                          <span className="moisture-value">{plant.moisture_level || 0}%</span>
-                          <div className="moisture-bar">
-                            <div
-                              className="moisture-fill"
-                              style={{
-                                width: `${plant.moisture_level || 0}%`,
-                                backgroundColor: getMoistureColor(`${plant.moisture_level || 0}%`)
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`status-badge ${plant.status?.toLowerCase().replace(' ', '-')}`}>
-                          {plant.status || 'Unknown'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-
-        {/* Recommendations */}
-        <section className="analytics-section">
-          <h2>💡 Recommendations</h2>
-          <div className="recommendations">
-            {stats.needsAttention > 0 && (
-              <div className="recommendation-card warning">
-                <p>🔔 {stats.needsAttention} plant(s) need attention. Check their moisture levels and status.</p>
-              </div>
-            )}
-            {avgMoisture < 30 && (
-              <div className="recommendation-card info">
-                <p>💧 Average moisture is low. Consider watering your plants more frequently.</p>
-              </div>
-            )}
-            {avgMoisture > 70 && (
-              <div className="recommendation-card info">
-                <p>⚠️ Average moisture is high. Ensure proper drainage and avoid overwatering.</p>
-              </div>
-            )}
-            {stats.total === 0 && (
-              <div className="recommendation-card info">
-                <p>🌱 Start by adding your first plant to the system!</p>
-              </div>
-            )}
+      {/* Insights Section */}
+      <section className="analytics-section insights">
+        <h2>🔍 Insights</h2>
+        <div className="insights-grid">
+          <div className="insight-card">
+            <h4>Most Watered</h4>
+            <p>{getTrendData()[getTrendData().length - 1]} ml this {timeRange}</p>
           </div>
-        </section>
-      </div>
+          <div className="insight-card">
+            <h4>Health Score</h4>
+            <p>{Math.round((healthyPlants / totalPlants) * 100)}% plants are healthy</p>
+          </div>
+          <div className="insight-card">
+            <h4>Recommendation</h4>
+            <p>{needsAttention > 0 
+              ? `${needsAttention} plant${needsAttention > 1 ? 's' : ''} need attention`
+              : 'All plants are doing great!'}
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
-
-// Helper function to determine moisture level color
-function getMoistureColor(range) {
-  if (range === '0-25%') return '#ff6b6b';
-  if (range === '26-50%') return '#ffa500';
-  if (range === '51-75%') return '#4ecdc4';
-  if (range === '76-100%') return '#06b6d4';
-  return '#999';
-}
 
 export default AnalyticsPage;

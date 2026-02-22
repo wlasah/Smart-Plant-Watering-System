@@ -199,6 +199,27 @@ body {
   margin: 0;
 }
 
+/* Search Filter Section */
+.search-filter-section {
+  margin-bottom: 48px;
+}
+
+/* No Results Message */
+.no-results {
+  background: white;
+  padding: 60px 40px;
+  border-radius: 14px;
+  border: 2px dashed #bae6fd;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.no-results p {
+  color: #64748b;
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 500;
+}
 /* Loading, Error, and Empty States */
 .loading-message,
 .error-message,

@@ -1,0 +1,166 @@
+/* Plant History/Watering History Component Styling */
+.plant-history {
+  background: linear-gradient(135deg, #f0f9ff 0%, #ecf8ff 100%);
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #bae6fd;
+}
+
+.plant-history__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0c4a6e;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #a5f3fc;
+}
+
+.plant-history__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.plant-history__list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.plant-history__list::-webkit-scrollbar-track {
+  background: #ecf8ff;
+  border-radius: 3px;
+}
+
+.plant-history__list::-webkit-scrollbar-thumb {
+  background: #a5f3fc;
+  border-radius: 3px;
+}
+
+.plant-history__list::-webkit-scrollbar-thumb:hover {
+  background: #06b6d4;
+}
+
+.plant-history__entry {
+  background: white;
+  border-left: 4px solid #06b6d4;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.plant-history__entry:hover {
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.15);
+  transform: translateX(4px);
+}
+
+.plant-history__entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.plant-history__date {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.plant-history__amount {
+  font-size: 14px;
+  font-weight: 600;
+  color: #06b6d4;
+}
+
+.plant-history__moisture-change {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: #0c4a6e;
+  flex-wrap: wrap;
+}
+
+.plant-history__moisture-before {
+  background-color: rgba(239, 68, 68, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.plant-history__moisture-after {
+  background-color: rgba(16, 185, 129, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.plant-history__moisture-arrow {
+  color: #94a3b8;
+  font-weight: bold;
+}
+
+.plant-history__notes {
+  font-size: 12px;
+  color: #64748b;
+  font-style: italic;
+  margin: 0;
+  padding-top: 4px;
+  border-top: 1px solid #f0f8ff;
+}
+
+.plant-history__empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+  padding: 20px;
+  margin: 0;
+}
+
+.plant-history__stats {
+  display: flex;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 2px solid #a5f3fc;
+}
+
+.plant-history__stat {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+}
+
+.plant-history__stat span {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.plant-history__stat strong {
+  display: block;
+  font-size: 18px;
+  color: #06b6d4;
+  font-weight: 700;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .plant-history {
+    padding: 16px;
+  }
+
+  .plant-history__list {
+    max-height: 300px;
+  }
+
+  .plant-history__stats {
+    flex-direction: column;
+  }
+}
