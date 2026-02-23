@@ -24,6 +24,10 @@ const Dashboard = ({
   
   // State for add plant form
   const [isFormOpen, setIsFormOpen] = useState(false);
+  // Function to determine status based on moisture level
+  const determineStatus = (moistureLevel) => {
+    return moistureLevel > 50 ? 'Healthy' : 'Needs Attention';
+  };
 
   // Fetch plants from XAMPP backend API
   useEffect(() => {
@@ -33,11 +37,12 @@ const Dashboard = ({
         const response = await fetch('http://localhost:5000/api/plants');
         const data = await response.json();
         
-        // Transform data from snake_case to camelCase
+        // Transform data from snake_case to camelCase and calculate status
         const transformedData = data.map(plant => ({
           ...plant,
           moistureLevel: plant.moisture_level,
-          lastWatered: plant.last_watered
+          lastWatered: plant.last_watered,
+          status: determineStatus(plant.moisture_level)
         }));
         
         setPlants(transformedData);
@@ -83,11 +88,13 @@ const Dashboard = ({
           moisture_before: plant.moistureLevel,
           moisture_after: newMoisture
         })
-      });
-
-      if (response.ok) {
-        // Update local state
-        const updatedPlant = { ...plant, moistureLevel: newMoisture };
+      });      if (response.ok) {
+        // Update local state with new moisture level and recalculated status
+        const updatedPlant = { 
+          ...plant, 
+          moistureLevel: newMoisture,
+          status: determineStatus(newMoisture)
+        };
         const updatedPlants = plants.map(p => p.id === plantId ? updatedPlant : p);
         setPlants(updatedPlants);
         setFilteredPlants(updatedPlants.filter(p => 
@@ -112,14 +119,14 @@ const Dashboard = ({
       onViewDetail(plant);
     }
   };
-
   // Handle new plant added from form
   const handlePlantAdded = (newPlant) => {
     // Transform data if coming from API
     const transformedPlant = {
       ...newPlant,
       moistureLevel: newPlant.moisture_level || newPlant.moistureLevel,
-      lastWatered: newPlant.last_watered || new Date().toLocaleString()
+      lastWatered: newPlant.last_watered || new Date().toLocaleString(),
+      status: determineStatus(newPlant.moisture_level || newPlant.moistureLevel || 50)
     };
     
     const updatedPlants = [...plants, transformedPlant];

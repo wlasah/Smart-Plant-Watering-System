@@ -59,12 +59,20 @@ const EditPlantForm = ({ plant, onPlantUpdated, isOpen, onClose }) => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    const moistureLevel = name === 'moisture_level' ? parseInt(value) : (formData.moisture_level || 50);
+    
+    // Determine status based on moisture level
+    let status = 'Healthy';
+    if (moistureLevel < 30) {
+      status = 'Needs Attention';
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'moisture_level' ? parseInt(value) : value
+      [name]: name === 'moisture_level' ? parseInt(value) : value,
+      status: name === 'moisture_level' ? status : prev.status
     }));
     
     // Clear field-specific error when user starts typing
@@ -217,24 +225,15 @@ const EditPlantForm = ({ plant, onPlantUpdated, isOpen, onClose }) => {
               {formData.moisture_level >= 60 && 'Wet 💦'}
             </div>
             {errors.moisture_level && <span className="form-error-text">{errors.moisture_level}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="edit-status">Plant Status *</label>
-            <select
-              id="edit-status"
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              disabled={loading}
-              className={errors.status ? 'form-select error' : 'form-select'}
-            >
-              <option value="Healthy">Healthy ✓</option>
-              <option value="Needs Water">Needs Water 💧</option>
-              <option value="Struggling">Struggling ⚠️</option>
-              <option value="Critical">Critical 🚨</option>
-            </select>
-            {errors.status && <span className="form-error-text">{errors.status}</span>}
+          </div>          <div className="form-group">
+            <label>Plant Status (Auto-determined)</label>
+            <div className="status-display">
+              {formData.moisture_level < 30 ? (
+                <span className="status-needs-attention">⚠️ Needs Attention</span>
+              ) : (
+                <span className="status-healthy">✅ Healthy</span>
+              )}
+            </div>
           </div>
 
           <div className="form-actions">
