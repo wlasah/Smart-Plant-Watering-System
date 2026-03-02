@@ -68,37 +68,38 @@ const Dashboard = ({
   };
 
   // Handle water plant interaction
-  const handleWaterClick = (plantId) => {
+  const handleWaterClick = async (plantId) => {
     const plant = plants.find(p => p.id === plantId);
     if (!plant) return;
 
     const newMoisture = Math.min(plant.moistureLevel + 30, 100);
     
     try {
-      // Log watering event to backend
-      const response = await fetch(`http://localhost:5000/api/plants/${plantId}/water`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          moisture_before: plant.moistureLevel,
-          moisture_after: newMoisture
-        })
+      // Update plant moisture in localStorage
+      const updatedPlant = { ...plant, moistureLevel: newMoisture, lastWatered: new Date().toISOString() };
+      const updatedPlants = plants.map(p => p.id === plantId ? updatedPlant : p);
+      setPlants(updatedPlants);
+      localStorage.setItem('plants', JSON.stringify(updatedPlants));
+      
+      // Log watering event to localStorage
+      const wateringHistory = JSON.parse(localStorage.getItem('wateringHistory')) || [];
+      wateringHistory.push({
+        id: Date.now(),
+        plant_id: plantId,
+        watering_date: new Date().toISOString(),
+        moisture_before: plant.moistureLevel,
+        moisture_after: newMoisture,
+        name: plant.name
       });
-
-      if (response.ok) {
-        // Update local state
-        const updatedPlant = { ...plant, moistureLevel: newMoisture };
-        const updatedPlants = plants.map(p => p.id === plantId ? updatedPlant : p);
-        setPlants(updatedPlants);
-        setFilteredPlants(updatedPlants.filter(p => 
-          filteredPlants.map(fp => fp.id).includes(p.id)
-        ));
-        
-        if (onNotification) {
-          onNotification(`💧 ${plant.name} watered! Moisture: ${newMoisture}%`, 'success');
-        }
+      localStorage.setItem('wateringHistory', JSON.stringify(wateringHistory));
+      
+      // Update filtered plants if needed
+      setFilteredPlants(updatedPlants.filter(p => 
+        filteredPlants.map(fp => fp.id).includes(p.id)
+      ));
+      
+      if (onNotification) {
+        onNotification(`💧 ${plant.name} watered! Moisture: ${newMoisture}%`, 'success');
       }
     } catch (err) {
       console.error('Error watering plant:', err);
