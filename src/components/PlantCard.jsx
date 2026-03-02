@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import '../styles/PlantCard.css';
 
-const PlantCard = ({ plant, onWaterClick }) => {
+const PlantCard = ({ plant, onWaterClick, onEdit, onDelete }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Never';
@@ -32,16 +33,55 @@ const PlantCard = ({ plant, onWaterClick }) => {
     return status === 'Healthy' ? '#10b981' : '#f59e0b';
   };
 
+  // Get dynamic status based on moisture level
+  const getDynamicStatus = () => {
+    // Threshold: plants below 50% moisture need attention
+    return plant.moistureLevel >= 50 ? 'Healthy' : 'Needs Attention';
+  };
+
+  const currentStatus = getDynamicStatus();
+
   return (
     <article className={`plant-card ${isExpanded ? 'plant-card--expanded' : ''}`}>
       <header className="plant-card__header">
-        <h3 className="plant-card__title">{plant.name}</h3>
         <span
           className="plant-card__status"
-          style={{ backgroundColor: getStatusColor(plant.status) }}
+          style={{ backgroundColor: getStatusColor(currentStatus) }}
         >
-          {plant.status}
+          {currentStatus}
         </span>
+        <h3 className="plant-card__title">{plant.name}</h3>
+        <div className="plant-card__menu">
+          <button
+            className="plant-card__menu-btn"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            title="More options"
+          >
+            ⋮
+          </button>
+          {isMenuOpen && (
+            <div className="plant-card__menu-dropdown">
+              <button
+                className="plant-card__menu-item"
+                onClick={() => {
+                  onEdit(plant);
+                  setIsMenuOpen(false);
+                }}
+              >
+                ✏️ Edit
+              </button>
+              <button
+                className="plant-card__menu-item delete"
+                onClick={() => {
+                  onDelete(plant.id);
+                  setIsMenuOpen(false);
+                }}
+              >
+                🗑️ Delete
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       <div className="plant-card__info">
@@ -52,7 +92,7 @@ const PlantCard = ({ plant, onWaterClick }) => {
 
         <div className="plant-card__info-item">
           <label>Last Watered</label>
-          <p>{formatDate(plant.last_watered)}</p>
+          <p>{formatDate(plant.lastWatered)}</p>
         </div>
       </div>
 
@@ -74,7 +114,7 @@ const PlantCard = ({ plant, onWaterClick }) => {
         <div className="plant-card__details">
           <h4>Additional Details</h4>
           <p><strong>Plant ID:</strong> {plant.id}</p>
-          <p><strong>Current Status:</strong> {plant.status}</p>
+          <p><strong>Current Status:</strong> {currentStatus}</p>
           <p><strong>Moisture Trend:</strong> Stable</p>
           <p><strong>Next Watering:</strong> In 2 days</p>
         </div>

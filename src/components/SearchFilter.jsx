@@ -16,7 +16,9 @@ const SearchFilter = ({ plants, onFilterChange }) => {
         plant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         plant.location.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesStatus = selectedStatus === 'All' || plant.status === selectedStatus;
+      // Calculate dynamic status based on moisture level (50% threshold)
+      const dynamicStatus = plant.moistureLevel >= 50 ? 'Healthy' : 'Needs Attention';
+      const matchesStatus = selectedStatus === 'All' || dynamicStatus === selectedStatus;
       const matchesLocation = selectedLocation === 'All' || plant.location === selectedLocation;
       
       return matchesSearch && matchesStatus && matchesLocation;

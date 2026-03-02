@@ -9,44 +9,31 @@ const AnalyticsPage = () => {
   const [selectedPlant, setSelectedPlant] = useState(null);
   const [timeRange, setTimeRange] = useState('week');
 
-  // Fetch plants and watering history from API
+  // Load plants and watering history from localStorage
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch plants
-        const plantsResponse = await fetch('http://localhost:5000/api/plants');
-        const plantsData = await plantsResponse.json();
-        
-        // Transform data from snake_case to camelCase
-        const transformedData = plantsData.map(plant => ({
-          ...plant,
-          moistureLevel: plant.moisture_level,
-          lastWatered: plant.last_watered
-        }));
-        
-        setPlants(transformedData);
-        
-        // Fetch watering history
-        const historyResponse = await fetch('http://localhost:5000/api/watering-history');
-        const historyData = await historyResponse.json();
-        setWateringHistory(historyData);
-        
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    try {
+      setLoading(true);
+      
+      // Load plants from localStorage
+      const savedPlants = localStorage.getItem('plants');
+      const plantsList = savedPlants ? JSON.parse(savedPlants) : [];
+      setPlants(plantsList);
+      
+      // Load watering history from localStorage
+      const savedHistory = localStorage.getItem('wateringHistory');
+      const historyList = savedHistory ? JSON.parse(savedHistory) : [];
+      setWateringHistory(historyList);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error loading data:', err);
+      setLoading(false);
+    }
   }, []);
 
-  // Calculate overall statistics
+  // Calculate overall statistics - DYNAMIC based on moisture level
   const totalPlants = plants.length;
-  const healthyPlants = plants.filter(p => p.status === 'Healthy').length;
-  const needsAttention = plants.filter(p => p.status === 'Needs Attention').length;
+  const healthyPlants = plants.filter(p => p.moistureLevel >= 50).length;
+  const needsAttention = plants.filter(p => p.moistureLevel < 50).length;
   const avgMoisture = plants.length > 0 
     ? Math.round(plants.reduce((sum, p) => sum + p.moistureLevel, 0) / plants.length)
     : 0;

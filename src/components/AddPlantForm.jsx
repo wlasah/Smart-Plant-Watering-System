@@ -20,7 +20,7 @@ const AddPlantForm = ({ onPlantAdded, isOpen, onClose }) => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -34,20 +34,23 @@ const AddPlantForm = ({ onPlantAdded, isOpen, onClose }) => {
     }
 
     try {
-      // TODO: Replace with your XAMPP API endpoint when backend is running
-      const response = await fetch('http://localhost:5000/api/plants', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add plant');
-      }
-
-      const newPlant = await response.json();
+      // Add plant to localStorage
+      const savedPlants = localStorage.getItem('plants');
+      const plantsList = savedPlants ? JSON.parse(savedPlants) : [];
+      
+      const newPlant = {
+        id: Date.now(),
+        name: formData.name,
+        location: formData.location,
+        moistureLevel: formData.moisture_level,
+        status: formData.status,
+        lastWatered: new Date().toLocaleString(),
+        created_at: new Date().toLocaleString()
+      };
+      
+      plantsList.push(newPlant);
+      localStorage.setItem('plants', JSON.stringify(plantsList));
+      
       setSuccess(true);
       setFormData({
         name: '',
@@ -66,7 +69,7 @@ const AddPlantForm = ({ onPlantAdded, isOpen, onClose }) => {
         onClose();
       }, 1000);
     } catch (err) {
-      setError(err.message || 'Failed to add plant. Is your backend running?');
+      setError(err.message || 'Failed to add plant');
       console.error('Error adding plant:', err);
     } finally {
       setLoading(false);

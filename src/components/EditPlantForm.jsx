@@ -20,7 +20,7 @@ const EditPlantForm = ({ plant, onPlantUpdated, isOpen, onClose }) => {
       setFormData({
         name: plant.name || '',
         location: plant.location || '',
-        moisture_level: plant.moisture_level || 50,
+        moisture_level: plant.moistureLevel || 50,
         status: plant.status || 'Healthy'
       });
       setErrors({});
@@ -97,20 +97,23 @@ const EditPlantForm = ({ plant, onPlantUpdated, isOpen, onClose }) => {
     setSuccess(false);
 
     try {
-      // TODO: Replace with your XAMPP API endpoint when backend is running
-      const response = await fetch(`http://localhost:5000/api/plants/${plant.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update plant');
-      }
-
-      const updatedPlant = await response.json();
+      // Update plant in localStorage
+      const savedPlants = localStorage.getItem('plants');
+      const plantsList = savedPlants ? JSON.parse(savedPlants) : [];
+      
+      const updatedPlant = {
+        ...plant,
+        name: formData.name,
+        location: formData.location,
+        moistureLevel: formData.moisture_level,
+        status: formData.status
+      };
+      
+      const updatedPlantsList = plantsList.map(p => 
+        p.id === plant.id ? updatedPlant : p
+      );
+      localStorage.setItem('plants', JSON.stringify(updatedPlantsList));
+      
       setSuccess(true);
 
       // Notify parent component
@@ -123,7 +126,7 @@ const EditPlantForm = ({ plant, onPlantUpdated, isOpen, onClose }) => {
         onClose();
       }, 1500);
     } catch (err) {
-      setError(err.message || 'Failed to update plant. Is your backend running?');
+      setError(err.message || 'Failed to update plant');
       console.error('Error updating plant:', err);
     } finally {
       setLoading(false);

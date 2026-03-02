@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PlantCard from './PlantCard';
 import StatsCard from './StatsCard';
 import AddPlantForm from './AddPlantForm';
+import EditPlantForm from './EditPlantForm';
 import SearchFilter from './SearchFilter';
 import '../styles/Dashboard.css';
 
@@ -24,10 +25,6 @@ const Dashboard = ({
   
   // State for add plant form
   const [isFormOpen, setIsFormOpen] = useState(false);
-  // Function to determine status based on moisture level
-  const determineStatus = (moistureLevel) => {
-    return moistureLevel > 50 ? 'Healthy' : 'Needs Attention';
-  };
 
   // Fetch plants from XAMPP backend API
   useEffect(() => {
@@ -37,12 +34,11 @@ const Dashboard = ({
         const response = await fetch('http://localhost:5000/api/plants');
         const data = await response.json();
         
-        // Transform data from snake_case to camelCase and calculate status
+        // Transform data from snake_case to camelCase
         const transformedData = data.map(plant => ({
           ...plant,
           moistureLevel: plant.moisture_level,
-          lastWatered: plant.last_watered,
-          status: determineStatus(plant.moisture_level)
+          lastWatered: plant.last_watered
         }));
         
         setPlants(transformedData);
@@ -58,12 +54,13 @@ const Dashboard = ({
     fetchPlants();
   }, []);
 
-  // Calculate statistics
+  // Calculate statistics - DYNAMIC based on moisture level
   const avgMoisture = Math.round(
     plants.reduce((sum, plant) => sum + plant.moistureLevel, 0) / plants.length
   ) || 0;
-  const healthyCount = plants.filter(p => p.status === 'Healthy').length;
-  const needsAttentionCount = plants.filter(p => p.status === 'Needs Attention').length;
+  // Dynamic: Healthy if moisture >= 50%, Needs Attention if < 50%
+  const healthyCount = plants.filter(p => p.moistureLevel >= 50).length;
+  const needsAttentionCount = plants.filter(p => p.moistureLevel < 50).length;
 
   // Handle filter change from SearchFilter component
   const handleFilterChange = (filtered) => {
@@ -71,7 +68,7 @@ const Dashboard = ({
   };
 
   // Handle water plant interaction
-  const handleWaterClick = async (plantId) => {
+  const handleWaterClick = (plantId) => {
     const plant = plants.find(p => p.id === plantId);
     if (!plant) return;
 
@@ -88,13 +85,11 @@ const Dashboard = ({
           moisture_before: plant.moistureLevel,
           moisture_after: newMoisture
         })
-      });      if (response.ok) {
-        // Update local state with new moisture level and recalculated status
-        const updatedPlant = { 
-          ...plant, 
-          moistureLevel: newMoisture,
-          status: determineStatus(newMoisture)
-        };
+      });
+
+      if (response.ok) {
+        // Update local state
+        const updatedPlant = { ...plant, moistureLevel: newMoisture };
         const updatedPlants = plants.map(p => p.id === plantId ? updatedPlant : p);
         setPlants(updatedPlants);
         setFilteredPlants(updatedPlants.filter(p => 
@@ -108,7 +103,7 @@ const Dashboard = ({
     } catch (err) {
       console.error('Error watering plant:', err);
       if (onNotification) {
-        onNotification('❌ Failed to log watering event', 'error');
+        onNotification('❌ Failed to water plant', 'error');
       }
     }
   };
@@ -125,19 +120,54 @@ const Dashboard = ({
     const transformedPlant = {
       ...newPlant,
       moistureLevel: newPlant.moisture_level || newPlant.moistureLevel,
-      lastWatered: newPlant.last_watered || new Date().toLocaleString(),
-      status: determineStatus(newPlant.moisture_level || newPlant.moistureLevel || 50)
+      lastWatered: newPlant.last_watered || new Date().toLocaleString()
     };
     
-    const updatedPlants = [...plants, transformedPlant];
+    const updatedPlants = [...plants, plantToAdd];
     setPlants(updatedPlants);
     setFilteredPlants(updatedPlants);
     
+    // Save to localStorage
+    localStorage.setItem('plants', JSON.stringify(updatedPlants));
+    
     if (onPlantAdded) {
-      onPlantAdded(transformedPlant);
+      onPlantAdded(plantToAdd);
     }
     
     setIsFormOpen(false);
+  };
+
+  // Handle plant edit
+  const handleEditPlant = (plant) => {
+    setEditingPlant(plant);
+    setIsEditFormOpen(true);
+  };
+
+  // Handle plant edit submission
+  const handlePlantUpdated = (updatedPlant) => {
+    const updatedPlants = plants.map(p => 
+      p.id === updatedPlant.id ? updatedPlant : p
+    );
+    setPlants(updatedPlants);
+    setFilteredPlants(updatedPlants.filter(p => 
+      filteredPlants.map(fp => fp.id).includes(p.id)
+    ));
+    localStorage.setItem('plants', JSON.stringify(updatedPlants));
+    if (onNotification) {
+      onNotification(`🔄 ${updatedPlant.name} updated successfully`, 'success');
+    }
+  };
+
+  // Handle plant delete
+  const handleDeletePlant = (plantId) => {
+    const plant = plants.find(p => p.id === plantId);
+    const updatedPlants = plants.filter(p => p.id !== plantId);
+    setPlants(updatedPlants);
+    setFilteredPlants(updatedPlants);
+    localStorage.setItem('plants', JSON.stringify(updatedPlants));
+    if (onNotification) {
+      onNotification(`🗑️ ${plant.name} has been deleted`, 'success');
+    }
   };
 
   return (
@@ -161,6 +191,14 @@ const Dashboard = ({
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         onPlantAdded={handlePlantAdded}
+      />
+
+      {/* Edit Plant Form Modal */}
+      <EditPlantForm
+        plant={editingPlant}
+        isOpen={isEditFormOpen}
+        onClose={() => setIsEditFormOpen(false)}
+        onPlantUpdated={handlePlantUpdated}
       />
 
       {loading && (
@@ -220,12 +258,13 @@ const Dashboard = ({
                 {filteredPlants.map((plant) => (
                   <div 
                     key={plant.id}
-                    onClick={() => handlePlantCardClick(plant)}
                     style={{ cursor: 'pointer' }}
                   >
                     <PlantCard
                       plant={plant}
                       onWaterClick={handleWaterClick}
+                      onEdit={handleEditPlant}
+                      onDelete={handleDeletePlant}
                     />
                   </div>
                 ))}

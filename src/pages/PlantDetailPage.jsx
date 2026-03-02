@@ -48,6 +48,13 @@ const PlantDetailPage = ({ plant, onBack, onWater, onDelete }) => {
     // You could call an onUpdate prop here
   };
 
+  // Calculate dynamic status based on moisture level (50% threshold)
+  const getDynamicStatus = () => {
+    return plant.moistureLevel >= 50 ? 'Healthy' : 'Needs Attention';
+  };
+
+  const dynamicStatus = getDynamicStatus();
+
   // Calculate care recommendations
   const daysUntilWatering = Math.max(0, 3 - Math.floor(plant.moistureLevel / 30));
   const plantAge = '45 days'; // Mock data
@@ -67,12 +74,12 @@ const PlantDetailPage = ({ plant, onBack, onWater, onDelete }) => {
         <div className="plant-detail-main">
           {/* Status Card */}
           <section className="detail-section status-section">
-            <div className="status-badge" style={{ backgroundColor: plant.status === 'Healthy' ? '#10b981' : '#f59e0b' }}>
-              {plant.status === 'Healthy' ? '✅' : '⚠️'} {plant.status}
+            <div className="status-badge" style={{ backgroundColor: dynamicStatus === 'Healthy' ? '#10b981' : '#f59e0b' }}>
+              {dynamicStatus === 'Healthy' ? '✅' : '⚠️'} {dynamicStatus}
             </div>
             <h3>Current Status</h3>
             <p className="status-text">
-              {plant.status === 'Healthy' 
+              {dynamicStatus === 'Healthy' 
                 ? 'Your plant is thriving! Continue with regular care.' 
                 : 'Your plant needs attention soon. Check watering schedule.'}
             </p>
