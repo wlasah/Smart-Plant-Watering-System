@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PlantCard from './PlantCard';
 import StatsCard from './StatsCard';
 import AddPlantForm from './AddPlantForm';
 import EditPlantForm from './EditPlantForm';
 import SearchFilter from './SearchFilter';
 import '../styles/Dashboard.css';
+import { useDashboard } from '../hooks/useDashboard';
 
 const Dashboard = ({ 
   plants: propPlants = [], 
@@ -15,40 +16,20 @@ const Dashboard = ({
   onNotification,
   onPlantAdded
 }) => {
-  // State for plants data (will be fetched from localStorage or props)
-  const [plants, setPlants] = useState(propPlants);
-  const [loading, setLoading] = useState(!propPlants || propPlants.length === 0);
-  const [error, setError] = useState(null);
-
-  // State for search/filter
-  const [filteredPlants, setFilteredPlants] = useState(plants);
-    // State for add plant form
-  const [isFormOpen, setIsFormOpen] = useState(false);
-
-  // State for edit plant form
-  const [editingPlant, setEditingPlant] = useState(null);
-  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
-
-  // Fetch plants from localStorage or use propPlants
-  useEffect(() => {
-    setLoading(true);
-    try {
-      const storedPlants = localStorage.getItem('plants');
-      if (storedPlants) {
-        const parsedPlants = JSON.parse(storedPlants);
-        setPlants(parsedPlants);
-        setFilteredPlants(parsedPlants);
-      } else {
-        setPlants(propPlants);
-        setFilteredPlants(propPlants);
-      }
-      setError(null);
-    } catch (err) {
-      setError('Failed to load plants data');
-      console.error('Error loading plants:', err);
-    }
-    setLoading(false);
-  }, [propPlants]);
+  const {
+    plants,
+    setPlants,
+    loading,
+    error,
+    filteredPlants,
+    setFilteredPlants,
+    isFormOpen,
+    setIsFormOpen,
+    editingPlant,
+    setEditingPlant,
+    isEditFormOpen,
+    setIsEditFormOpen
+  } = useDashboard(propPlants);
 
   // Calculate statistics - DYNAMIC based on moisture level
   const avgMoisture = Math.round(

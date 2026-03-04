@@ -1,22 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import '../styles/FormStyles.css';
+import { useLogin } from '../hooks/useLogin';
 
 const LoginPage = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-      localStorage.setItem('isLoggedIn', 'true');
-      if (onLogin) onLogin(user);
-    } else {
-      setError('Invalid username or password');
-    }
-  };
+  const {
+    username,
+    setUsername,
+    password,
+    setPassword,
+    error,
+    handleSubmit
+  } = useLogin(onLogin);
 
   return (
     <div className="form-page">
