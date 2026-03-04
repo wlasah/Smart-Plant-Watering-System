@@ -15,44 +15,40 @@ const Dashboard = ({
   onNotification,
   onPlantAdded
 }) => {
-  // State for plants data (will be fetched from XAMPP/API)
+  // State for plants data (will be fetched from localStorage or props)
   const [plants, setPlants] = useState(propPlants);
   const [loading, setLoading] = useState(!propPlants || propPlants.length === 0);
   const [error, setError] = useState(null);
 
   // State for search/filter
   const [filteredPlants, setFilteredPlants] = useState(plants);
-  
-  // State for add plant form
+    // State for add plant form
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  // Fetch plants from XAMPP backend API
-  useEffect(() => {
-    const fetchPlants = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('http://localhost:5000/api/plants');
-        const data = await response.json();
-        
-        // Transform data from snake_case to camelCase
-        const transformedData = data.map(plant => ({
-          ...plant,
-          moistureLevel: plant.moisture_level,
-          lastWatered: plant.last_watered
-        }));
-        
-        setPlants(transformedData);
-        setFilteredPlants(transformedData);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch plants data');
-        setLoading(false);
-        console.error('Error fetching plants:', err);
-      }
-    };
+  // State for edit plant form
+  const [editingPlant, setEditingPlant] = useState(null);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
-    fetchPlants();
-  }, []);
+  // Fetch plants from localStorage or use propPlants
+  useEffect(() => {
+    setLoading(true);
+    try {
+      const storedPlants = localStorage.getItem('plants');
+      if (storedPlants) {
+        const parsedPlants = JSON.parse(storedPlants);
+        setPlants(parsedPlants);
+        setFilteredPlants(parsedPlants);
+      } else {
+        setPlants(propPlants);
+        setFilteredPlants(propPlants);
+      }
+      setError(null);
+    } catch (err) {
+      setError('Failed to load plants data');
+      console.error('Error loading plants:', err);
+    }
+    setLoading(false);
+  }, [propPlants]);
 
   // Calculate statistics - DYNAMIC based on moisture level
   const avgMoisture = Math.round(
@@ -114,8 +110,7 @@ const Dashboard = ({
     if (onViewDetail) {
       onViewDetail(plant);
     }
-  };
-  // Handle new plant added from form
+  };  // Handle new plant added from form
   const handlePlantAdded = (newPlant) => {
     // Transform data if coming from API
     const transformedPlant = {
@@ -124,7 +119,7 @@ const Dashboard = ({
       lastWatered: newPlant.last_watered || new Date().toLocaleString()
     };
     
-    const updatedPlants = [...plants, plantToAdd];
+    const updatedPlants = [...plants, transformedPlant];
     setPlants(updatedPlants);
     setFilteredPlants(updatedPlants);
     
@@ -132,7 +127,7 @@ const Dashboard = ({
     localStorage.setItem('plants', JSON.stringify(updatedPlants));
     
     if (onPlantAdded) {
-      onPlantAdded(plantToAdd);
+      onPlantAdded(transformedPlant);
     }
     
     setIsFormOpen(false);

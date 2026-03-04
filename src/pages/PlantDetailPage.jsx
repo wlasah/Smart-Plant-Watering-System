@@ -43,7 +43,7 @@ const PlantDetailPage = ({ plant, onBack, onWater, onDelete }) => {
   };
 
   const handleSaveEdit = () => {
-    // Here you would typically send an update to your API
+    // Save edits locally (no API/database)
     setIsEditing(false);
     // You could call an onUpdate prop here
   };

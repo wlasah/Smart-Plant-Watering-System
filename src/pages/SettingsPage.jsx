@@ -230,16 +230,16 @@ const SettingsPage = () => {
             <span className="value">1.0.0</span>
           </div>
           <div className="info-item">
-            <span className="label">Database:</span>
-            <span className="value">Connected</span>
+            <span className="label">Storage:</span>
+            <span className="value">Local Browser</span>
           </div>
           <div className="info-item">
             <span className="label">Last Backup:</span>
-            <span className="value">Today at 2:30 PM</span>
+            <span className="value">Manual (No Cloud)</span>
           </div>
           <div className="info-item">
             <span className="label">API Status:</span>
-            <span className="value">Online</span>
+            <span className="value">No API (Frontend Only)</span>
           </div>
         </div>
       </div>

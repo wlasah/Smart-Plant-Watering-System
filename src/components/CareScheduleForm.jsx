@@ -45,7 +45,7 @@ const CareScheduleForm = ({ initialSchedule = {}, onSave, isOpen, onClose }) => 
     setError(null);
     setSuccess(false);
     try {
-      // Simulate API call
+      // Simulate saving to browser/localStorage
       await new Promise(res => setTimeout(res, 800));
       setSuccess(true);
       if (onSave) onSave(formData);
