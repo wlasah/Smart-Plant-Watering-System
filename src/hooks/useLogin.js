@@ -11,6 +11,7 @@ export function useLogin(onLogin) {
     const user = users.find(u => u.username === username && u.password === password);
     if (user) {
       localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('currentUser', JSON.stringify({ username: user.username, role: user.role }));
       if (onLogin) onLogin(user);
     } else {
       setError('Invalid username or password');

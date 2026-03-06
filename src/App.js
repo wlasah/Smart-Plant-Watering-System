@@ -14,6 +14,7 @@ import SettingsPage from './pages/SettingsPage';
 import PlantDetailPage from './pages/PlantDetailPage';
 import PlantsInventoryPage from './pages/PlantsInventoryPage';
 import NotFound from './pages/NotFound';
+import UnauthorizedPage from './pages/UnauthorizedPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProtectedRoute from './pages/ProtectedRoute';
@@ -37,6 +38,7 @@ function AppContent({ isLoggedIn, setIsLoggedIn, notification, setNotification, 
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUser');
     setIsLoggedIn(false);
     // Navigate to login after logout using React Router
     navigate('/login', { replace: true });
@@ -51,35 +53,36 @@ function AppContent({ isLoggedIn, setIsLoggedIn, notification, setNotification, 
           <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/" element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin={true}>
               <DashboardPage onNotification={handleNotification} />
             </ProtectedRoute>
           } />
           <Route path="/plant-care" element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin={true}>
               <PlantCarePage />
             </ProtectedRoute>
           } />
           <Route path="/plants-inventory" element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin={true}>
               <PlantsInventoryPage />
             </ProtectedRoute>
           } />
           <Route path="/analytics" element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin={true}>
               <AnalyticsPage />
             </ProtectedRoute>
           } />
           <Route path="/settings" element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin={true}>
               <SettingsPage />
             </ProtectedRoute>
           } />
           <Route path="/plant/:id" element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin={true}>
               <PlantDetailPage />
             </ProtectedRoute>
           } />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

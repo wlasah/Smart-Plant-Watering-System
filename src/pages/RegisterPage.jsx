@@ -14,6 +14,8 @@ const RegisterPage = ({ onRegister }) => {
     setPassword,
     confirmPassword,
     setConfirmPassword,
+    role,
+    setRole,
     error,
     success,
     handleSubmit
@@ -31,6 +33,11 @@ const RegisterPage = ({ onRegister }) => {
         <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
         <label>Confirm Password</label>
         <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+        <label>Role</label>
+        <select value={role} onChange={e => setRole(e.target.value)} required>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
         {error && <div className="form-error">{error}</div>}
         {success && <div className="form-success">Registration successful! <Link to="/login">Login</Link></div>}
         <button type="submit" className="form-btn">Register</button>

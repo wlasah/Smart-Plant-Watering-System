@@ -5,6 +5,7 @@ export function useRegister(onRegister, navigate) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('user');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -19,11 +20,11 @@ export function useRegister(onRegister, navigate) {
       setError('Username already exists');
       return;
     }
-    users.push({ username, email, password });
+    users.push({ username, email, password, role });
     localStorage.setItem('users', JSON.stringify(users));
     setSuccess(true);
     setError('');
-    if (onRegister) onRegister({ username, email });
+    if (onRegister) onRegister({ username, email, role });
     if (navigate) {
       setTimeout(() => {
         navigate('/login');
@@ -40,6 +41,8 @@ export function useRegister(onRegister, navigate) {
     setPassword,
     confirmPassword,
     setConfirmPassword,
+    role,
+    setRole,
     error,
     success,
     handleSubmit
