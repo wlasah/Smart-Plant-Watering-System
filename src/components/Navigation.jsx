@@ -59,6 +59,16 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
                   </li>
                   <li className="nav-item">
                     <Link 
+                      to="/plants-inventory" 
+                      className={`nav-link ${isActive('/plants-inventory') ? 'active' : ''}`}
+                      onClick={closeMobileMenu}
+                    >
+                      <span className="icon">📋</span>
+                      Inventory
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link 
                       to="/analytics" 
                       className={`nav-link ${isActive('/analytics') ? 'active' : ''}`}
                       onClick={closeMobileMenu}

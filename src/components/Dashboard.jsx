@@ -1,150 +1,112 @@
-import React, { useCallback } from 'react';
-import PlantCard from './PlantCard';
+import React, { useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import StatsCard from './StatsCard';
 import AddPlantForm from './AddPlantForm';
-import EditPlantForm from './EditPlantForm';
-import SearchFilter from './SearchFilter';
 import '../styles/Dashboard.css';
 import { useDashboard } from '../hooks/useDashboard';
 
 const Dashboard = ({ 
-  plants: propPlants = [], 
-  onPlantsLoaded,
-  onViewDetail,
-  onWater,
-  onNavigateTo,
   onNotification,
-  onPlantAdded
 }) => {
+  const navigate = useNavigate();
   const {
     plants,
     setPlants,
     loading,
     error,
-    filteredPlants,
-    setFilteredPlants,
     isFormOpen,
     setIsFormOpen,
-    editingPlant,
-    setEditingPlant,
-    isEditFormOpen,
-    setIsEditFormOpen
-  } = useDashboard(propPlants);
+  } = useDashboard();
 
   // Calculate statistics - DYNAMIC based on moisture level
-  const avgMoisture = Math.round(
-    plants.reduce((sum, plant) => sum + plant.moistureLevel, 0) / plants.length
-  ) || 0;
-  // Dynamic: Healthy if moisture >= 50%, Needs Attention if < 50%
-  const healthyCount = plants.filter(p => p.moistureLevel >= 50).length;
-  const needsAttentionCount = plants.filter(p => p.moistureLevel < 50).length;
-
-  // Handle filter change from SearchFilter component
-  const handleFilterChange = useCallback((filtered) => {
-    setFilteredPlants(filtered);
-  }, [setFilteredPlants]);
-
-  // Handle water plant interaction
-  const handleWaterClick = async (plantId) => {
-    const plant = plants.find(p => p.id === plantId);
-    if (!plant) return;
-
-    const newMoisture = Math.min(plant.moistureLevel + 30, 100);
+  const stats = useMemo(() => {
+    const avgMoisture = plants.length > 0
+      ? Math.round(plants.reduce((sum, plant) => sum + plant.moistureLevel, 0) / plants.length)
+      : 0;
+    const healthyCount = plants.filter(p => p.moistureLevel >= 50).length;
+    const needsAttentionCount = plants.filter(p => p.moistureLevel < 50).length;
     
-    try {
-      // Update plant moisture in localStorage
-      const updatedPlant = { ...plant, moistureLevel: newMoisture, lastWatered: new Date().toISOString() };
-      const updatedPlants = plants.map(p => p.id === plantId ? updatedPlant : p);
-      setPlants(updatedPlants);
-      localStorage.setItem('plants', JSON.stringify(updatedPlants));
-      
-      // Log watering event to localStorage
-      const wateringHistory = JSON.parse(localStorage.getItem('wateringHistory')) || [];
-      wateringHistory.push({
-        id: Date.now(),
-        plant_id: plantId,
-        watering_date: new Date().toISOString(),
-        moisture_before: plant.moistureLevel,
-        moisture_after: newMoisture,
-        name: plant.name
-      });
-      localStorage.setItem('wateringHistory', JSON.stringify(wateringHistory));
-      
-      // Update filtered plants if needed
-      setFilteredPlants(updatedPlants.filter(p => 
-        filteredPlants.map(fp => fp.id).includes(p.id)
-      ));
-      
-      if (onNotification) {
-        onNotification(`💧 ${plant.name} watered! Moisture: ${newMoisture}%`, 'success');
-      }
-    } catch (err) {
-      console.error('Error watering plant:', err);
-      if (onNotification) {
-        onNotification('❌ Failed to water plant', 'error');
-      }
-    }
-  };
+    return {
+      avgMoisture,
+      healthyCount,
+      needsAttentionCount,
+      total: plants.length
+    };
+  }, [plants]);
 
-  // Handle plant card click to view details
-  const handlePlantCardClick = (plant) => {
-    if (onViewDetail) {
-      onViewDetail(plant);
-    }
-  };  // Handle new plant added from form
+  // Get plants needing attention (sorted by lowest moisture first)
+  const plantsNeedingAttention = useMemo(() => {
+    return plants
+      .filter(p => p.moistureLevel < 50)
+      .sort((a, b) => a.moistureLevel - b.moistureLevel)
+      .slice(0, 5);
+  }, [plants]);
+
+  // Get recently added plants
+  const recentlyAddedPlants = useMemo(() => {
+    return plants
+      .sort((a, b) => b.id - a.id)
+      .slice(0, 5);
+  }, [plants]);
+
+  // Get recently watered plants
+  const recentlyWatered = useMemo(() => {
+    return plants
+      .filter(p => p.lastWatered)
+      .sort((a, b) => new Date(b.lastWatered) - new Date(a.lastWatered))
+      .slice(0, 5);
+  }, [plants]);
+
   const handlePlantAdded = (newPlant) => {
-    // Transform data if coming from API
     const transformedPlant = {
       ...newPlant,
       moistureLevel: newPlant.moisture_level || newPlant.moistureLevel,
-      lastWatered: newPlant.last_watered || new Date().toLocaleString()
+      lastWatered: newPlant.last_watered || new Date().toISOString()
     };
     
     const updatedPlants = [...plants, transformedPlant];
     setPlants(updatedPlants);
-    setFilteredPlants(updatedPlants);
-    
-    // Save to localStorage
     localStorage.setItem('plants', JSON.stringify(updatedPlants));
-    
-    if (onPlantAdded) {
-      onPlantAdded(transformedPlant);
-    }
     
     setIsFormOpen(false);
-  };
-
-  // Handle plant edit
-  const handleEditPlant = (plant) => {
-    setEditingPlant(plant);
-    setIsEditFormOpen(true);
-  };
-
-  // Handle plant edit submission
-  const handlePlantUpdated = (updatedPlant) => {
-    const updatedPlants = plants.map(p => 
-      p.id === updatedPlant.id ? updatedPlant : p
-    );
-    setPlants(updatedPlants);
-    setFilteredPlants(updatedPlants.filter(p => 
-      filteredPlants.map(fp => fp.id).includes(p.id)
-    ));
-    localStorage.setItem('plants', JSON.stringify(updatedPlants));
     if (onNotification) {
-      onNotification(`🔄 ${updatedPlant.name} updated successfully`, 'success');
+      onNotification(`🌱 ${newPlant.name} added successfully!`, 'success');
     }
   };
 
-  // Handle plant delete
-  const handleDeletePlant = (plantId) => {
+  const handleWaterPlant = (plantId) => {
     const plant = plants.find(p => p.id === plantId);
-    const updatedPlants = plants.filter(p => p.id !== plantId);
+    if (!plant) return;
+
+    const newMoisture = Math.min(plant.moistureLevel + 30, 100);
+    const updatedPlant = { ...plant, moistureLevel: newMoisture, lastWatered: new Date().toISOString() };
+    const updatedPlants = plants.map(p => p.id === plantId ? updatedPlant : p);
+    
     setPlants(updatedPlants);
-    setFilteredPlants(updatedPlants);
     localStorage.setItem('plants', JSON.stringify(updatedPlants));
+
+    // Log watering event
+    const wateringHistory = JSON.parse(localStorage.getItem('wateringHistory')) || [];
+    wateringHistory.push({
+      id: Date.now(),
+      plant_id: plantId,
+      watering_date: new Date().toISOString(),
+      moisture_before: plant.moistureLevel,
+      moisture_after: newMoisture,
+      name: plant.name
+    });
+    localStorage.setItem('wateringHistory', JSON.stringify(wateringHistory));
+
     if (onNotification) {
-      onNotification(`🗑️ ${plant.name} has been deleted`, 'success');
+      onNotification(`💧 ${plant.name} watered! Moisture: ${newMoisture}%`, 'success');
     }
+  };
+
+  const getMoistureColor = (level) => {
+    if (level >= 75) return '#10b981';
+    if (level >= 50) return '#3b82f6';
+    if (level >= 25) return '#f59e0b';
+    return '#ef4444';
   };
 
   return (
@@ -152,7 +114,7 @@ const Dashboard = ({
       <header className="dashboard-header">
         <div className="header-content">
           <h1>🌿 Smart Plant Watering System</h1>
-          <p>Monitor and control your plants' watering needs</p>
+          <p>Welcome! Here's your plant system overview</p>
         </div>
         <button 
           className="btn-add-plant"
@@ -163,19 +125,10 @@ const Dashboard = ({
         </button>
       </header>
 
-      {/* Add Plant Form Modal */}
       <AddPlantForm 
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         onPlantAdded={handlePlantAdded}
-      />
-
-      {/* Edit Plant Form Modal */}
-      <EditPlantForm
-        plant={editingPlant}
-        isOpen={isEditFormOpen}
-        onClose={() => setIsEditFormOpen(false)}
-        onPlantUpdated={handlePlantUpdated}
       />
 
       {loading && (
@@ -190,80 +143,166 @@ const Dashboard = ({
         </div>
       )}
 
-      {!loading && plants.length > 0 && (
+      {!loading && (
         <>
-          {/* System Overview Section - Using StatsCard Component */}
+          {/* System Overview Statistics */}
           <section className="system-overview">
             <StatsCard 
               title="Total Plants" 
-              value={plants.length}
+              value={stats.total}
               icon="🌱"
             />
             <StatsCard 
               title="Healthy Plants" 
-              value={healthyCount}
+              value={stats.healthyCount}
               color="healthy"
               icon="✅"
             />
             <StatsCard 
               title="Need Attention" 
-              value={needsAttentionCount}
+              value={stats.needsAttentionCount}
               color="attention"
               icon="⚠️"
             />
             <StatsCard 
               title="Avg Moisture" 
-              value={`${avgMoisture}%`}
+              value={`${stats.avgMoisture}%`}
               color="moisture"
               icon="💧"
             />
           </section>
 
-          {/* Search and Filter Section */}
-          <section className="search-filter-section">
-            <SearchFilter 
-              plants={plants}
-              onFilterChange={handleFilterChange}
-            />
-          </section>
+          {stats.total > 0 ? (
+            <>
+              {/* Quick Actions */}
+              <section className="quick-actions">
+                <button 
+                  className="action-btn primary"
+                  onClick={() => navigate('/plants-inventory')}
+                >
+                  📋 View All Plants ({stats.total})
+                </button>
+                <button 
+                  className="action-btn secondary"
+                  onClick={() => navigate('/analytics')}
+                >
+                  📈 View Analytics
+                </button>
+              </section>
 
-          {/* Plants Section - Using PlantCard Component */}
-          <section className="plants-section">
-            <h2>Plant Status {filteredPlants.length !== plants.length && `(${filteredPlants.length} filtered)`}</h2>
-            {filteredPlants.length > 0 ? (
-              <article className="plants-grid">
-                {filteredPlants.map((plant) => (
-                  <div 
-                    key={plant.id}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <PlantCard
-                      plant={plant}
-                      onWaterClick={handleWaterClick}
-                      onEdit={handleEditPlant}
-                      onDelete={handleDeletePlant}
-                    />
+              {/* Plants Needing Attention */}
+              {plantsNeedingAttention.length > 0 && (
+                <section className="dashboard-section needs-attention">
+                  <h2>⚠️ Plants Needing Attention</h2>
+                  <div className="quick-list">
+                    {plantsNeedingAttention.map(plant => (
+                      <div key={plant.id} className="list-item alert-item">
+                        <div className="item-info">
+                          <h3>{plant.name}</h3>
+                          <p className="item-meta">📍 {plant.location}</p>
+                        </div>
+                        <div className="item-moisture">
+                          <div className="moisture-bar-small">
+                            <div 
+                              className="moisture-fill"
+                              style={{
+                                width: `${plant.moistureLevel}%`,
+                                backgroundColor: getMoistureColor(plant.moistureLevel)
+                              }}
+                            />
+                          </div>
+                          <span className="moisture-value">{plant.moistureLevel}%</span>
+                        </div>
+                        <button 
+                          className="list-action-btn"
+                          onClick={() => handleWaterPlant(plant.id)}
+                        >
+                          💧 Water
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </article>
-            ) : (
-              <div className="no-results">
-                <p>No plants match your filter. Try adjusting your search criteria.</p>
+                  {plantsNeedingAttention.length < stats.needsAttentionCount && (
+                    <p className="view-more">
+                      <a href="#" onClick={(e) => {e.preventDefault(); navigate('/plants-inventory')}}>
+                        View all {stats.needsAttentionCount} plants needing attention →
+                      </a>
+                    </p>
+                  )}
+                </section>
+              )}
+
+              {/* Recently Added Plants */}
+              {recentlyAddedPlants.length > 0 && (
+                <section className="dashboard-section recent-added">
+                  <h2>🌱 Recently Added</h2>
+                  <div className="quick-list">
+                    {recentlyAddedPlants.map(plant => (
+                      <div key={plant.id} className="list-item">
+                        <div className="item-info">
+                          <h3>{plant.name}</h3>
+                          <p className="item-meta">📍 {plant.location}</p>
+                        </div>
+                        <div className="item-status">
+                          <span className={`status-badge ${plant.moistureLevel >= 50 ? 'healthy' : 'warning'}`}>
+                            {plant.moistureLevel >= 50 ? '✓ Healthy' : '⚠ Needs Water'}
+                          </span>
+                          <span className="moisture-value">{plant.moistureLevel}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Recently Watered */}
+              {recentlyWatered.length > 0 && (
+                <section className="dashboard-section recent-watered">
+                  <h2>💧 Recently Watered</h2>
+                  <div className="quick-list">
+                    {recentlyWatered.map(plant => (
+                      <div key={plant.id} className="list-item">
+                        <div className="item-info">
+                          <h3>{plant.name}</h3>
+                          <p className="item-meta">
+                            Last watered: {new Date(plant.lastWatered).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="item-moisture">
+                          <div className="moisture-bar-small">
+                            <div 
+                              className="moisture-fill"
+                              style={{
+                                width: `${plant.moistureLevel}%`,
+                                backgroundColor: getMoistureColor(plant.moistureLevel)
+                              }}
+                            />
+                          </div>
+                          <span className="moisture-value">{plant.moistureLevel}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          ) : (
+            <section className="empty-state">
+              <div className="empty-state-content">
+                <p className="empty-icon">🌱</p>
+                <h2>No plants yet</h2>
+                <p>Add your first plant to get started with monitoring!</p>
+                <button 
+                  className="btn-add-plant"
+                  onClick={() => setIsFormOpen(true)}
+                >
+                  ➕ Add Your First Plant
+                </button>
               </div>
-            )}
-          </section>
+            </section>
+          )}
         </>
       )}
-
-      {!loading && plants.length === 0 && (
-        <div className="empty-message">
-          <p>No plants found. Add your first plant to get started! 🌱</p>
-        </div>
-      )}
-
-      <footer className="dashboard-footer">
-        <p>&copy; 2026 Smart Plant Watering Irrigation System. All rights reserved.</p>
-      </footer>
     </main>
   );
 };

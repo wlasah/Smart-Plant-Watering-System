@@ -12,6 +12,7 @@ import PlantCarePage from './pages/PlantCarePage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
 import PlantDetailPage from './pages/PlantDetailPage';
+import PlantsInventoryPage from './pages/PlantsInventoryPage';
 import NotFound from './pages/NotFound';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -57,6 +58,11 @@ function AppContent({ isLoggedIn, setIsLoggedIn, notification, setNotification, 
           <Route path="/plant-care" element={
             <ProtectedRoute>
               <PlantCarePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/plants-inventory" element={
+            <ProtectedRoute>
+              <PlantsInventoryPage />
             </ProtectedRoute>
           } />
           <Route path="/analytics" element={
