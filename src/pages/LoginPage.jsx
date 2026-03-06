@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/FormStyles.css';
 import { useLogin } from '../hooks/useLogin';
 
@@ -23,7 +24,7 @@ const LoginPage = ({ onLogin }) => {
         {error && <div className="form-error">{error}</div>}
         <button type="submit" className="form-btn">Login</button>
       </form>
-      <p>Don't have an account? <a href="/register">Register</a></p>
+      <p>Don't have an account? <Link to="/register">Register</Link></p>
     </div>
   );
 };

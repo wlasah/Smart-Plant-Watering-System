@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import PlantCard from './PlantCard';
 import StatsCard from './StatsCard';
 import AddPlantForm from './AddPlantForm';
@@ -40,9 +40,9 @@ const Dashboard = ({
   const needsAttentionCount = plants.filter(p => p.moistureLevel < 50).length;
 
   // Handle filter change from SearchFilter component
-  const handleFilterChange = (filtered) => {
+  const handleFilterChange = useCallback((filtered) => {
     setFilteredPlants(filtered);
-  };
+  }, [setFilteredPlants]);
 
   // Handle water plant interaction
   const handleWaterClick = async (plantId) => {

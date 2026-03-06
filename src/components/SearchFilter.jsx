@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/SearchFilter.css';
 
 const SearchFilter = ({ plants, onFilterChange }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedLocation, setSelectedLocation] = useState('All');
+  const prevFilteredRef = useRef([]);
 
   // Extract unique locations from plants
   const uniqueLocations = ['All', ...new Set(plants.map(p => p.location))];
@@ -24,8 +25,16 @@ const SearchFilter = ({ plants, onFilterChange }) => {
       return matchesSearch && matchesStatus && matchesLocation;
     });
 
-    onFilterChange(filtered);
-  }, [searchTerm, selectedStatus, selectedLocation, plants]);
+    // Only call onFilterChange if the filtered results actually changed
+    const hasChanged = 
+      filtered.length !== prevFilteredRef.current.length ||
+      filtered.some((plant, idx) => plant.id !== prevFilteredRef.current[idx]?.id);
+    
+    if (hasChanged) {
+      prevFilteredRef.current = filtered;
+      onFilterChange(filtered);
+    }
+  }, [searchTerm, selectedStatus, selectedLocation, plants, onFilterChange]);
 
   const handleClearSearch = () => {
     setSearchTerm('');

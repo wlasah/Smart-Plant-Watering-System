@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export function useRegister(onRegister) {
+export function useRegister(onRegister, navigate) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,9 +24,11 @@ export function useRegister(onRegister) {
     setSuccess(true);
     setError('');
     if (onRegister) onRegister({ username, email });
-    setTimeout(() => {
-      window.location.href = '/login';
-    }, 1200);
+    if (navigate) {
+      setTimeout(() => {
+        navigate('/login');
+      }, 1200);
+    }
   };
 
   return {

@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 
 export function useDashboard(propPlants) {
-  const [plants, setPlants] = useState(propPlants);
-  const [loading, setLoading] = useState(!propPlants || propPlants.length === 0);
+  const [plants, setPlants] = useState(propPlants || []);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filteredPlants, setFilteredPlants] = useState(plants);
+  const [filteredPlants, setFilteredPlants] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPlant, setEditingPlant] = useState(null);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
+  // Only load plants on mount, not on every render
   useEffect(() => {
     setLoading(true);
     try {
@@ -17,9 +18,12 @@ export function useDashboard(propPlants) {
         const parsedPlants = JSON.parse(storedPlants);
         setPlants(parsedPlants);
         setFilteredPlants(parsedPlants);
-      } else {
+      } else if (propPlants && propPlants.length > 0) {
         setPlants(propPlants);
         setFilteredPlants(propPlants);
+      } else {
+        setPlants([]);
+        setFilteredPlants([]);
       }
       setError(null);
     } catch (err) {
@@ -27,7 +31,7 @@ export function useDashboard(propPlants) {
       console.error('Error loading plants:', err);
     }
     setLoading(false);
-  }, [propPlants]);
+  }, []); // Empty dependency array - run only on mount
 
   return {
     plants,
