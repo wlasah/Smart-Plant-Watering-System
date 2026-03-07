@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import '../styles/Navigation.css';
 
-const Navigation = ({ isLoggedIn, onLogout }) => {
+const Navigation = ({ isLoggedIn, onLogout, currentUser }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -87,6 +87,18 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
                       Settings
                     </Link>
                   </li>
+                  {currentUser?.role === 'admin' && (
+                    <li className="nav-item">
+                      <Link
+                        to="/all-plants"
+                        className={`nav-link ${isActive('/all-plants') ? 'active' : ''}`}
+                        onClick={closeMobileMenu}
+                      >
+                        <span className="icon">🌍</span>
+                        All Users' Plants
+                      </Link>
+                    </li>
+                  )}
                 </>
               )}
               {!isLoggedIn && (

@@ -18,6 +18,7 @@ import UnauthorizedPage from './pages/UnauthorizedPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProtectedRoute from './pages/ProtectedRoute';
+import AllUsersPlants from './pages/AllUsersPlants';
 
 // Internal component to access useNavigate and useLocation
 function AppContent({ isLoggedIn, setIsLoggedIn, notification, setNotification, closeNotification, handleNotification }) {
@@ -80,6 +81,11 @@ function AppContent({ isLoggedIn, setIsLoggedIn, notification, setNotification, 
           <Route path="/plant/:id" element={
             <ProtectedRoute requireAdmin={true}>
               <PlantDetailPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/all-plants" element={
+            <ProtectedRoute requireAdmin={true}>
+              <AllUsersPlants />
             </ProtectedRoute>
           } />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />

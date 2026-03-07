@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/SearchFilter.css';
 
-const SearchFilter = ({ plants, onFilterChange }) => {
+const SearchFilter = ({ plants, onFilterChange, showUserFilter }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedLocation, setSelectedLocation] = useState('All');
+  const [selectedUser, setSelectedUser] = useState('All');
   const prevFilteredRef = useRef([]);
 
   // Extract unique locations from plants
   const uniqueLocations = ['All', ...new Set(plants.map(p => p.location))];
 
-  // Filter plants based on search term and status
+  // Extract unique users from plants
+  const uniqueUsers = ['All', ...new Set(plants.map(p => p.owner).filter(Boolean))];
+
+  // Filter plants based on search term, status, location, and user
   useEffect(() => {
     const filtered = plants.filter(plant => {
       const matchesSearch = 
@@ -21,8 +25,9 @@ const SearchFilter = ({ plants, onFilterChange }) => {
       const dynamicStatus = plant.moistureLevel >= 50 ? 'Healthy' : 'Needs Attention';
       const matchesStatus = selectedStatus === 'All' || dynamicStatus === selectedStatus;
       const matchesLocation = selectedLocation === 'All' || plant.location === selectedLocation;
+      const matchesUser = !showUserFilter || selectedUser === 'All' || plant.owner === selectedUser;
       
-      return matchesSearch && matchesStatus && matchesLocation;
+      return matchesSearch && matchesStatus && matchesLocation && matchesUser;
     });
 
     // Only call onFilterChange if the filtered results actually changed
@@ -34,12 +39,13 @@ const SearchFilter = ({ plants, onFilterChange }) => {
       prevFilteredRef.current = filtered;
       onFilterChange(filtered);
     }
-  }, [searchTerm, selectedStatus, selectedLocation, plants, onFilterChange]);
+  }, [searchTerm, selectedStatus, selectedLocation, selectedUser, plants, onFilterChange, showUserFilter]);
 
   const handleClearSearch = () => {
     setSearchTerm('');
     setSelectedStatus('All');
     setSelectedLocation('All');
+    setSelectedUser('All');
   };
 
   return (
@@ -64,7 +70,7 @@ const SearchFilter = ({ plants, onFilterChange }) => {
         )}
       </div>
 
-      <div className="search-filter__filters">
+      <div className="search-filter__filters-row">
         <select
           className="search-filter__select"
           value={selectedStatus}
@@ -89,7 +95,19 @@ const SearchFilter = ({ plants, onFilterChange }) => {
           ))}
         </select>
 
-        {(searchTerm || selectedStatus !== 'All' || selectedLocation !== 'All') && (
+        {showUserFilter && (
+          <select
+            className="search-filter__dropdown"
+            value={selectedUser}
+            onChange={e => setSelectedUser(e.target.value)}
+          >
+            {uniqueUsers.map(user => (
+              <option key={user} value={user}>{user}</option>
+            ))}
+          </select>
+        )}
+
+        {(searchTerm || selectedStatus !== 'All' || selectedLocation !== 'All' || selectedUser !== 'All') && (
           <button
             className="search-filter__reset-btn"
             onClick={handleClearSearch}
