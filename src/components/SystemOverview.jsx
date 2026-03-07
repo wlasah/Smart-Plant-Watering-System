@@ -65,7 +65,7 @@ const SystemOverview = ({ users, activityLog }) => {
           <div className="card-content">
             <h3>Needs Attention</h3>
             <p className="card-value">{needsAttentionPlants}</p>
-            <span className="card-label">Moisture < 50%</span>
+            <span className="card-label">Moisture &lt; 50%</span>
           </div>
         </div>
 

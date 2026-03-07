@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import StatsCard from '../components/StatsCard';
+import UserEngagement from '../components/UserEngagement';
+import PlantHealthTrends from '../components/PlantHealthTrends';
+import WateringAnalytics from '../components/WateringAnalytics';
+import CommunicationCenter from '../components/CommunicationCenter';
+import BatchOperations from '../components/BatchOperations';
 import '../styles/AnalyticsPage.css';
 
 const AnalyticsPage = () => {
   const [plants, setPlants] = useState([]);
   const [wateringHistory, setWateringHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedPlant, setSelectedPlant] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [activityLog, setActivityLog] = useState([]);
   const [timeRange, setTimeRange] = useState('week');
+  const [activeTab, setActiveTab] = useState('overview');
 
-  // Load plants and watering history from localStorage
+  // Load plants, watering history, users, and activity log from localStorage
   useEffect(() => {
     try {
-      setLoading(true);
-      
       // Load plants from localStorage
       const savedPlants = localStorage.getItem('plants');
       const plantsList = savedPlants ? JSON.parse(savedPlants) : [];
@@ -23,10 +27,18 @@ const AnalyticsPage = () => {
       const savedHistory = localStorage.getItem('wateringHistory');
       const historyList = savedHistory ? JSON.parse(savedHistory) : [];
       setWateringHistory(historyList);
-      setLoading(false);
+
+      // Load users from localStorage
+      const savedUsers = localStorage.getItem('users');
+      const usersList = savedUsers ? JSON.parse(savedUsers) : [];
+      setUsers(usersList);
+
+      // Load activity log from localStorage
+      const savedActivity = localStorage.getItem('userActivityLog');
+      const activityList = savedActivity ? JSON.parse(savedActivity) : [];
+      setActivityLog(activityList);
     } catch (err) {
       console.error('Error loading data:', err);
-      setLoading(false);
     }
   }, []);
 
@@ -94,14 +106,50 @@ const AnalyticsPage = () => {
   return (
     <div className="analytics-page">
       <header className="analytics-header">
-        <h1>📊 Analytics & Statistics</h1>
-        <p>Track plant health trends and water usage patterns</p>
+        <h1>📊 Analytics & Reports</h1>
+        <p>Track plant health trends, user engagement, and system performance</p>
       </header>
 
-      {/* Key Metrics Section */}
-      <section className="analytics-section">
-        <h2>Overall System Health</h2>
-        <div className="analytics-metrics-grid">
+      {/* Tab Navigation */}
+      <div className="analytics-tabs">
+        <button 
+          className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
+          onClick={() => setActiveTab('overview')}
+        >
+          Overview
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'engagement' ? 'active' : ''}`}
+          onClick={() => setActiveTab('engagement')}
+        >
+          User Engagement
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'health' ? 'active' : ''}`}
+          onClick={() => setActiveTab('health')}
+        >
+          Plant Health
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'watering' ? 'active' : ''}`}
+          onClick={() => setActiveTab('watering')}
+        >
+          Watering Analytics
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'communication' ? 'active' : ''}`}
+          onClick={() => setActiveTab('communication')}
+        >
+          Communications
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'overview' && (
+        <div>
+          <section className="analytics-section">
+            <h2>Overall System Health</h2>
+            <div className="analytics-metrics-grid">
           <StatsCard 
             title="Total Plants" 
             value={totalPlants}
@@ -142,6 +190,12 @@ const AnalyticsPage = () => {
             value={totalWateringEvents}
             color="healthy"
             icon="💦"
+          />
+          <StatsCard 
+            title="Active Users" 
+            value={users.length}
+            color="healthy"
+            icon="👥"
           />
         </div>
       </section>
@@ -303,6 +357,27 @@ const AnalyticsPage = () => {
           </div>
         </div>
       </section>
+        </div>
+      )}
+
+      {activeTab === 'engagement' && (
+        <UserEngagement users={users} activityLog={activityLog} />
+      )}
+
+      {activeTab === 'health' && (
+        <PlantHealthTrends plants={plants} />
+      )}
+
+      {activeTab === 'watering' && (
+        <WateringAnalytics wateringHistory={wateringHistory} plants={plants} />
+      )}
+
+      {activeTab === 'communication' && (
+        <div className="communication-section">
+          <CommunicationCenter users={users} />
+          <BatchOperations users={users} plants={plants} />
+        </div>
+      )}
     </div>
   );
 };
