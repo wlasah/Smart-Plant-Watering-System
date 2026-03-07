@@ -1,0 +1,148 @@
+.activity-log {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.log-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.log-count {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.empty-log {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.log-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-left: 4px solid #ddd;
+  border-radius: 4px;
+  background: #f8f9fa;
+  transition: all 0.2s;
+}
+
+.log-entry:hover {
+  background: #f0f0f0;
+  transform: translateX(4px);
+}
+
+.log-entry.success {
+  border-left-color: #28a745;
+  background: #f0f7f4;
+}
+
+.log-entry.danger {
+  border-left-color: #d32f2f;
+  background: #fdf0f0;
+}
+
+.log-entry.warning {
+  border-left-color: #f59e0b;
+  background: #fffaf0;
+}
+
+.log-entry.info {
+  border-left-color: #1976d2;
+  background: #f0f5ff;
+}
+
+.log-entry.default {
+  border-left-color: #999;
+  background: #f8f9fa;
+}
+
+.entry-icon {
+  font-size: 20px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.entry-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-description {
+  margin: 0 0 4px 0;
+  font-weight: 500;
+  color: #333;
+  word-break: break-word;
+}
+
+.entry-meta {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+}
+
+.entry-meta strong {
+  color: #333;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+@media (max-width: 768px) {
+  .activity-log {
+    padding: 16px;
+  }
+
+  .log-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .log-entries {
+    max-height: 400px;
+  }
+}

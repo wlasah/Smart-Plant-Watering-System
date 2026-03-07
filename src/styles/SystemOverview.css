@@ -1,0 +1,250 @@
+.system-overview {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.overview-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.overview-header h2 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.overview-header p {
+  margin: 0;
+  color: #999;
+  font-size: 14px;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.overview-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  padding: 20px;
+  color: white;
+  display: flex;
+  gap: 16px;
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.overview-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+}
+
+.overview-card.total-users {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.overview-card.admin-count {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.overview-card.user-count {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.overview-card.total-plants {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.overview-card.healthy-plants {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.overview-card.needs-attention {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.overview-card.average-moisture {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.card-icon {
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  opacity: 0.9;
+}
+
+.card-content {
+  flex: 1;
+}
+
+.card-content h3 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-value {
+  margin: 0 0 4px 0;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.card-label {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.85;
+  display: block;
+}
+
+.user-distribution {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.user-distribution h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.system-health-distribution {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.system-health-distribution h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.distribution-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.distribution-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.distribution-bar {
+  display: flex;
+  height: 32px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f0f0f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bar-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 12px;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  min-width: 24px;
+  transition: all 0.3s ease;
+}
+
+.bar-segment.admin {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+.bar-segment.user {
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.bar-segment.healthy {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.bar-segment.needs-attention {
+  background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+}
+
+.distribution-legend {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.distribution-legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+.legend-box {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legend-box.admin {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+.legend-box.user {
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.legend-box.healthy {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.legend-box.needs-attention {
+  background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+}
+
+@media (max-width: 1024px) {
+  .overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .system-overview {
+    padding: 16px;
+  }
+
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .overview-card {
+    flex-direction: row;
+  }
+
+  .card-icon {
+    font-size: 28px;
+    min-width: 48px;
+  }
+
+  .card-value {
+    font-size: 24px;
+  }
+}

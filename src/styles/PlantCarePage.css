@@ -1,0 +1,160 @@
+.plant-care-page {
+  padding: 2rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+  min-height: 100vh;
+}
+
+.plant-care-header {
+  margin-bottom: 2rem;
+}
+
+.plant-care-header h1 {
+  color: #0c7a8b;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.plant-care-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.care-sections-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.care-section-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border-left: 4px solid #0ea5e9;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.care-section-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.care-section-card h3 {
+  color: #0c7a8b;
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.care-section-card p {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.care-detail-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.care-detail-section h2 {
+  color: #0c7a8b;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.care-detail-section p {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1e;
+}
+
+.care-tips-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 1.5rem;
+}
+
+.care-tips-list li {
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  background: #f8fafc;
+  border-left: 4px solid #06b6d4;
+  border-radius: 4px;
+  color: #333;
+}
+
+.care-tips-list li:before {
+  content: '✓ ';
+  color: #10b981;
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.seasonal-care {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.seasonal-card {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fecaca 100%);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.seasonal-card h4 {
+  color: #92400e;
+  margin-bottom: 0.5rem;
+}
+
+.seasonal-card p {
+  color: #78350f;
+  font-size: 0.95rem;
+}
+
+.common-problems {
+  margin-top: 2rem;
+}
+
+.problem-item {
+  padding: 1rem;
+  background: #fff5f5;
+  border-left: 4px solid #ef4444;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+}
+
+.problem-item h4 {
+  color: #991b1b;
+  margin-bottom: 0.5rem;
+}
+
+.problem-item p {
+  color: #7f1d1d;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .plant-care-page {
+    padding: 1rem;
+  }
+
+  .plant-care-header h1 {
+    font-size: 2rem;
+  }
+
+  .care-sections-container {
+    grid-template-columns: 1fr;
+  }
+
+  .care-detail-section {
+    padding: 1rem;
+  }
+}
