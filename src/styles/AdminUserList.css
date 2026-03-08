@@ -13,6 +13,27 @@
   margin-bottom: 24px;
   border-bottom: 2px solid #f0f0f0;
   padding-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.list-header .header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.selection-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #e3f2fd;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1976d2;
 }
 
 .admin-user-list h2 {
@@ -31,14 +52,63 @@
   margin: 0 0 16px 0;
 }
 
+.bulk-actions-panel {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.bulk-action-select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  min-width: 150px;
+}
+
+.bulk-action-select:focus {
+  outline: none;
+  border-color: #06b6d4;
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+}
+
+.btn-action-primary {
+  padding: 8px 16px;
+  background: #06b6d4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-action-primary:hover:not(:disabled) {
+  background: #0891b2;
+  transform: translateY(-1px);
+}
+
+.btn-action-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .users-table-container {
   overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
 }
 
 .users-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .users-table thead {
@@ -162,6 +232,72 @@
 
 .btn-delete:hover {
   background: #ffcdd2;
+}
+
+.btn-reset {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.btn-reset:hover {
+  background: #e1bee7;
+}
+
+.checkbox-cell {
+  width: 40px;
+  text-align: center;
+}
+
+.checkbox-cell input {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+.user-row.selected {
+  background: #e3f2fd;
+}
+
+.plants-cell,
+.activity-cell,
+.engagement-cell {
+  text-align: center;
+}
+
+.metric-value {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+}
+
+.engagement-bar {
+  position: relative;
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.engagement-fill {
+  position: absolute;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50 0%, #8bc34a 100%);
+  border-radius: 4px;
+}
+
+.engagement-text {
+  position: relative;
+  font-weight: 600;
+  color: #333;
+  font-size: 11px;
 }
 
 @media (max-width: 768px) {

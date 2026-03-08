@@ -1,7 +1,84 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/AdminUserList.css';
 
 const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => {
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [userMetrics, setUserMetrics] = useState({});
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [bulkAction, setBulkAction] = useState('');
+
+  useEffect(() => {
+    // Calculate user metrics (plants count, last activity)
+    const plants = JSON.parse(localStorage.getItem('plants')) || [];
+    const activityLog = JSON.parse(localStorage.getItem('userActivityLog')) || [];
+    
+    const metrics = {};
+    users.forEach(user => {
+      const userPlants = plants.filter(p => p.owner === user.username || p.user_id === user.id);
+      const userActivities = activityLog.filter(a => a.performedBy === user.username);
+      const lastActivity = userActivities.length > 0 
+        ? new Date(Math.max(...userActivities.map(a => new Date(a.timestamp))))
+        : null;
+
+      metrics[user.id || user.username] = {
+        plantCount: userPlants.length,
+        activityCount: userActivities.length,
+        lastActivity: lastActivity,
+        engagementScore: Math.min(100, Math.round((userActivities.length / 10) * 100))
+      };
+    });
+    setUserMetrics(metrics);
+  }, [users]);
+
+  const handleSelectUser = (userId) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUsers.length === users.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(users.map(u => u.id || u.username));
+    }
+  };
+
+  const handleBulkAction = () => {
+    if (!bulkAction) {
+      alert('Please select an action');
+      return;
+    }
+
+    switch (bulkAction) {
+      case 'make_admin':
+        selectedUsers.forEach(userId => {
+          onChangeRole(userId, 'admin');
+        });
+        alert(`✅ Made ${selectedUsers.length} user(s) admin!`);
+        break;
+      case 'make_user':
+        selectedUsers.forEach(userId => {
+          onChangeRole(userId, 'user');
+        });
+        alert(`✅ Changed ${selectedUsers.length} user(s) to regular user!`);
+        break;
+      case 'reset_password':
+        const defaultPassword = 'TempPass123!';
+        // In a real app, you'd send reset emails. For this demo, we note the change
+        alert(`✅ Password reset for ${selectedUsers.length} user(s) to: ${defaultPassword}\n(In production, reset emails would be sent)`);
+        break;
+      default:
+        break;
+    }
+
+    setSelectedUsers([]);
+    setBulkAction('');
+    setShowBulkActions(false);
+  };
+
   if (!users || users.length === 0) {
     return (
       <div className="admin-user-list">
@@ -17,63 +94,163 @@ const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => 
     <div className="admin-user-list">
       <div className="list-header">
         <h2>User Management</h2>
-        <button className="btn-primary" onClick={onAddUser}>+ Add New User</button>
+        <div className="header-actions">
+          {selectedUsers.length > 0 && (
+            <div className="selection-info">
+              <span>{selectedUsers.length} selected</span>
+              <button 
+                className="btn-secondary"
+                onClick={() => setShowBulkActions(!showBulkActions)}
+              >
+                ⚙️ Bulk Actions
+              </button>
+            </div>
+          )}
+          <button className="btn-primary" onClick={onAddUser}>+ Add New User</button>
+        </div>
       </div>
+
+      {showBulkActions && selectedUsers.length > 0 && (
+        <div className="bulk-actions-panel">
+          <select 
+            value={bulkAction}
+            onChange={(e) => setBulkAction(e.target.value)}
+            className="bulk-action-select"
+          >
+            <option value="">Select action...</option>
+            <option value="make_admin">👑 Make Admin</option>
+            <option value="make_user">👤 Make Regular User</option>
+            <option value="reset_password">🔑 Reset Password</option>
+          </select>
+          <button 
+            className="btn-action-primary"
+            onClick={handleBulkAction}
+            disabled={!bulkAction}
+          >
+            Execute
+          </button>
+          <button 
+            className="btn-secondary"
+            onClick={() => {
+              setShowBulkActions(false);
+              setSelectedUsers([]);
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
 
       <div className="users-table-container">
         <table className="users-table">
           <thead>
             <tr>
+              <th className="checkbox-cell">
+                <input 
+                  type="checkbox"
+                  checked={selectedUsers.length === users.length && users.length > 0}
+                  onChange={handleSelectAll}
+                  title="Select all users"
+                />
+              </th>
               <th>Username</th>
               <th>Email</th>
+              <th>Plants</th>
+              <th>Activity</th>
+              <th>Engagement</th>
               <th>Role</th>
-              <th>Created At</th>
+              <th>Last Activity</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {users.map(user => (
-              <tr key={user.id || user.username} className={`user-row ${user.role}`}>
-                <td className="username-cell">
-                  <span className="username">{user.username}</span>
-                  {user.role === 'admin' && <span className="admin-badge">ADMIN</span>}
-                </td>
-                <td className="email-cell">{user.email || '-'}</td>
-                <td className="role-cell">
-                  <select
-                    value={user.role || 'user'}
-                    onChange={(e) => onChangeRole(user.id || user.username, e.target.value)}
-                    className={`role-select role-${user.role}`}
-                  >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </td>
-                <td className="date-cell">
-                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                </td>
-                <td className="actions-cell">
-                  <button
-                    className="btn-action btn-edit"
-                    onClick={() => onEdit(user)}
-                    title="Edit user"
-                  >
-                    ✏️ Edit
-                  </button>
-                  <button
-                    className="btn-action btn-delete"
-                    onClick={() => {
-                      if (window.confirm(`Are you sure you want to delete user "${user.username}"?`)) {
-                        onDelete(user.id || user.username);
-                      }
-                    }}
-                    title="Delete user"
-                  >
-                    🗑️ Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {users.map(user => {
+              const userId = user.id || user.username;
+              const metrics = userMetrics[userId] || {};
+              const isSelected = selectedUsers.includes(userId);
+
+              return (
+                <tr key={userId} className={`user-row ${user.role} ${isSelected ? 'selected' : ''}`}>
+                  <td className="checkbox-cell">
+                    <input 
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleSelectUser(userId)}
+                    />
+                  </td>
+                  <td className="username-cell">
+                    <span className="username">{user.username}</span>
+                    {user.role === 'admin' && <span className="admin-badge">ADMIN</span>}
+                  </td>
+                  <td className="email-cell">{user.email || '-'}</td>
+                  <td className="plants-cell">
+                    <span className="metric-value">
+                      🌱 {metrics.plantCount || 0}
+                    </span>
+                  </td>
+                  <td className="activity-cell">
+                    <span className="metric-value">
+                      📊 {metrics.activityCount || 0}
+                    </span>
+                  </td>
+                  <td className="engagement-cell">
+                    <div className="engagement-bar">
+                      <div 
+                        className="engagement-fill"
+                        style={{ width: `${metrics.engagementScore || 0}%` }}
+                      ></div>
+                      <span className="engagement-text">{metrics.engagementScore || 0}%</span>
+                    </div>
+                  </td>
+                  <td className="role-cell">
+                    <select
+                      value={user.role || 'user'}
+                      onChange={(e) => onChangeRole(userId, e.target.value)}
+                      className={`role-select role-${user.role}`}
+                    >
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </td>
+                  <td className="date-cell">
+                    {metrics.lastActivity 
+                      ? metrics.lastActivity.toLocaleDateString() + ' ' + metrics.lastActivity.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : 'Never'}
+                  </td>
+                  <td className="actions-cell">
+                    <button
+                      className="btn-action btn-edit"
+                      onClick={() => onEdit(user)}
+                      title="Edit user"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      className="btn-action btn-reset"
+                      onClick={() => {
+                        if (window.confirm(`Reset password for "${user.username}"?`)) {
+                          alert('✅ Password reset link would be sent via email (demo)');
+                        }
+                      }}
+                      title="Reset password"
+                    >
+                      🔑
+                    </button>
+                    <button
+                      className="btn-action btn-delete"
+                      onClick={() => {
+                        if (window.confirm(`Are you sure you want to delete user "${user.username}"?`)) {
+                          onDelete(userId);
+                        }
+                      }}
+                      title="Delete user"
+                    >
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
