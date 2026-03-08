@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AdminSidebar from '../components/AdminSidebar';
 import StatsCard from '../components/StatsCard';
 import UserEngagement from '../components/UserEngagement';
 import PlantHealthTrends from '../components/PlantHealthTrends';
@@ -14,6 +15,7 @@ const AnalyticsPage = () => {
   const [activityLog, setActivityLog] = useState([]);
   const [timeRange, setTimeRange] = useState('week');
   const [activeTab, setActiveTab] = useState('overview');
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Load plants, watering history, users, and activity log from localStorage
   useEffect(() => {
@@ -37,6 +39,10 @@ const AnalyticsPage = () => {
       const savedActivity = localStorage.getItem('userActivityLog');
       const activityList = savedActivity ? JSON.parse(savedActivity) : [];
       setActivityLog(activityList);
+
+      // Load current user
+      const user = JSON.parse(localStorage.getItem('currentUser'));
+      setCurrentUser(user);
     } catch (err) {
       console.error('Error loading data:', err);
     }
@@ -104,11 +110,13 @@ const AnalyticsPage = () => {
   const totalWateringEvents = wateringHistory.length;
 
   return (
-    <div className="analytics-page">
-      <header className="analytics-header">
-        <h1>📊 Analytics & Reports</h1>
-        <p>Track plant health trends, user engagement, and system performance</p>
-      </header>
+    <div className="admin-page-wrapper">
+      <AdminSidebar currentUser={currentUser} onLogout={() => {}} />
+      <div className="analytics-page">
+        <header className="analytics-header">
+          <h1>📊 Analytics & Reports</h1>
+          <p>Track plant health trends, user engagement, and system performance</p>
+        </header>
 
       {/* Tab Navigation */}
       <div className="analytics-tabs">
@@ -378,6 +386,7 @@ const AnalyticsPage = () => {
           <BatchOperations users={users} plants={plants} />
         </div>
       )}
+      </div>
     </div>
   );
 };

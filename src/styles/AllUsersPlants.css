@@ -1,93 +1,694 @@
-/* All Users' Plants Page Styles */
-.all-users-plants-page {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+/* ============================================
+   Enhanced All Users' Plants Page Styles
+   ============================================ */
+
+/* Admin Page Wrapper for Sidebar Layout */
+.admin-page-wrapper {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* On desktop, add padding to account for fixed sidebar */
+@media (min-width: 1025px) {
+  .admin-page-wrapper .all-users-plants-page {
+    padding-left: 280px;
+  }
+}
+
+.admin-page-wrapper .all-users-plants-page {
+  padding: 30px 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
 }
 
+/* On mobile/tablet, sidebar overlays */
+@media (max-width: 1024px) {
+  .admin-page-wrapper .all-users-plants-page {
+    padding: 30px 20px;
+  }
+}
+
+.all-users-plants-page {
+  padding: 30px 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.all-users-plants-page.enhanced {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
 .all-users-plants-header {
   text-align: center;
   margin-bottom: 40px;
+  padding: 30px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .all-users-plants-header h1 {
   font-size: 2.5rem;
-  color: #0c7a8b;
   margin: 0 0 10px 0;
   font-weight: 700;
 }
 
 .all-users-plants-header p {
   font-size: 1.1rem;
-  color: #666;
   margin: 0;
+  opacity: 0.9;
 }
 
-.all-users-plants-controls {
+/* Quick Stats */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.stat-box {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.stat-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.critical-stat .stat-number { color: #e74c3c; }
+.warning-stat .stat-number { color: #f39c12; }
+.healthy-stat .stat-number { color: #27ae60; }
+.total-stat .stat-number { color: #3498db; }
+
+/* Controls Section */
+.controls-section {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.search-box {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 40px 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background-color: #f9f9ff;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+}
+
+.filter-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.filter-select {
+  padding: 10px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-select:hover {
+  border-color: #667eea;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #667eea;
+  background-color: #f9f9ff;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.view-toggle,
+.reset-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.view-toggle {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.view-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.reset-btn {
+  background: #ecf0f1;
+  color: #333;
+  border: 2px solid #bdc3c7;
+}
+
+.reset-btn:hover {
+  background: #bdc3c7;
+  color: white;
+}
+
+/* Bulk Actions Panel */
+.bulk-actions-panel {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.2);
+}
+
+.bulk-actions-panel span {
+  font-weight: 600;
+  color: #856404;
+}
+
+.bulk-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.bulk-controls select {
+  padding: 8px 12px;
+  border: 2px solid #ffc107;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-execute,
+.btn-clear {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-execute {
+  background: #27ae60;
+  color: white;
+}
+
+.btn-execute:hover:not(:disabled) {
+  background: #229954;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+}
+
+.btn-execute:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-clear {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-clear:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
   background: white;
   border-radius: 12px;
-  padding: 25px;
-  margin-bottom: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
-.all-users-plants-table-wrapper {
-  overflow-x: auto;
+.no-results p {
+  font-size: 1.3rem;
+  color: #666;
+  margin-bottom: 20px;
 }
 
-.all-users-plants-table {
+/* Table View */
+.table-view-container {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.plants-table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.all-users-plants-table th, .all-users-plants-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #e5e7eb;
+.plants-table.enhanced-table {
+  background: white;
+}
+
+.plants-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.plants-table th {
+  padding: 15px;
   text-align: left;
-}
-
-.all-users-plants-table th {
-  background: #bae6fd;
-  color: #0c7a8b;
-}
-
-.all-users-plants-table tr:last-child td {
+  font-weight: 600;
   border-bottom: none;
 }
 
-.plants-distribution {
-  margin-top: 40px;
+.plants-table tbody tr {
+  border-bottom: 1px solid #ecf0f1;
+  transition: all 0.2s ease;
 }
 
-.distribution-cards {
+.plants-table tbody tr:hover {
+  background-color: #f9f9ff;
+}
+
+.plants-table td {
+  padding: 15px;
+  color: #333;
+}
+
+.plant-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.plant-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.plant-owner,
+.plant-location,
+.plant-type {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.plant-moisture {
   display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  justify-content: center;
+  align-items: center;
+  gap: 10px;
 }
 
-.distribution-card {
-  background: #fff;
+.moisture-bar {
+  flex: 1;
+  min-width: 80px;
+  height: 6px;
+  background: #ecf0f1;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.moisture-fill {
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.plant-moisture span {
+  min-width: 40px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.health-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.last-watered {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* Card View */
+.card-view-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.plant-card {
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  padding: 24px;
-  min-width: 260px;
-  max-width: 350px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.distribution-card h3 {
-  margin-top: 0;
-  color: #0c7a8b;
+.plant-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-@media (max-width: 900px) {
-  .distribution-cards {
+.card-header {
+  padding: 18px;
+  border-bottom: 1px solid #ecf0f1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+  flex: 1;
+}
+
+.card-content {
+  padding: 18px;
+  font-size: 0.95rem;
+}
+
+.card-content p {
+  margin: 10px 0;
+  color: #666;
+}
+
+.card-content strong {
+  color: #333;
+}
+
+.moisture-info {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #ecf0f1;
+}
+
+.moisture-info strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.card-checkbox {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .all-users-plants-header h1 {
+    font-size: 2rem;
+  }
+
+  .quick-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filter-controls {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bulk-actions-panel {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
+  }
+
+  .card-view-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .all-users-plants-page {
+    padding: 15px 10px;
+  }
+
+  .all-users-plants-header {
+    padding: 20px 15px;
+  }
+
+  .all-users-plants-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .all-users-plants-header p {
+    font-size: 0.95rem;
+  }
+
+  .quick-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-box {
+    padding: 15px;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .controls-section {
+    padding: 15px;
+  }
+
+  .filter-controls {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .action-buttons {
+    gap: 8px;
+  }
+
+  .view-toggle,
+  .reset-btn {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .bulk-actions-panel {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .bulk-controls {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .bulk-controls select,
+  .btn-execute,
+  .btn-clear {
+    width: 100%;
+  }
+
+  .card-view-container {
+    grid-template-columns: 1fr;
+  }
+
+  .table-view-container {
+    overflow-x: auto;
+  }
+
+  .plants-table {
+    font-size: 0.85rem;
+  }
+
+  .plants-table th,
+  .plants-table td {
+    padding: 10px;
+  }
+
+  .plant-moisture {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .moisture-bar {
+    width: 100%;
+  }
+
+  .card-header {
+    flex-direction: column;
+  }
+
+  .card-checkbox {
+    top: 10px;
+    right: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .all-users-plants-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .quick-stats {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .stat-number {
+    font-size: 1.3rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+
+  .controls-section {
+    padding: 12px;
+  }
+
+  .search-input {
+    padding: 10px 35px 10px 12px;
+    font-size: 0.95rem;
+  }
+
+  .filter-select {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+
+  .view-toggle,
+  .reset-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  .bulk-actions-panel span {
+    font-size: 0.9rem;
+  }
+
+  .bulk-controls select {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+  }
+
+  .btn-execute,
+  .btn-clear {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  .plants-table {
+    font-size: 0.75rem;
+  }
+
+  .plants-table th,
+  .plants-table td {
+    padding: 6px;
+  }
+
+  .health-badge {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .card-content p {
+    margin: 6px 0;
+    font-size: 0.85rem;
+  }
+
+  .moisture-info {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .controls-section,
+  .bulk-actions-panel,
+  .card-checkbox,
+  .view-toggle,
+  .reset-btn {
+    display: none;
+  }
+
+  .plant-card {
+    page-break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ddd;
   }
 }

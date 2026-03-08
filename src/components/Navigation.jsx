@@ -60,23 +60,13 @@ const Navigation = ({ isLoggedIn, onLogout, currentUser }) => {
                   {currentUser?.role === 'admin' && (
                     <>
                       <li className="nav-item">
-                        <Link 
-                          to="/settings" 
-                          className={`nav-link ${isActive('/settings') ? 'active' : ''}`}
-                          onClick={closeMobileMenu}
-                        >
-                          <span className="icon">⚙️</span>
-                          Settings
-                        </Link>
-                      </li>
-                      <li className="nav-item">
                         <Link
                           to="/all-plants"
                           className={`nav-link ${isActive('/all-plants') ? 'active' : ''}`}
                           onClick={closeMobileMenu}
                         >
                           <span className="icon">🌍</span>
-                          All Users' Plants
+                          Reports
                         </Link>
                       </li>
                     </>
@@ -108,15 +98,6 @@ const Navigation = ({ isLoggedIn, onLogout, currentUser }) => {
                 </>
               )}
             </ul>
-            {/* Logout button for logged-in users */}
-            {isLoggedIn && (
-              <button className="nav-logout-btn" onClick={() => {
-                closeMobileMenu();
-                if (onLogout) onLogout();
-              }}>
-                Logout
-              </button>
-            )}
           </>
         )}
       </div>
