@@ -38,12 +38,17 @@ const AddPlantForm = ({ onPlantAdded, isOpen, onClose }) => {
       const savedPlants = localStorage.getItem('plants');
       const plantsList = savedPlants ? JSON.parse(savedPlants) : [];
       
+      // Get current user info
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      
       const newPlant = {
         id: Date.now(),
         name: formData.name,
         location: formData.location,
         moistureLevel: formData.moisture_level,
         status: formData.status,
+        owner: currentUser?.username || 'Unknown',
+        user_id: currentUser?.id,
         lastWatered: new Date().toLocaleString(),
         created_at: new Date().toLocaleString()
       };

@@ -8,11 +8,9 @@ import NotificationToast from './components/NotificationToast';
 
 // Pages
 import DashboardPage from './pages/DashboardPage';
-import PlantCarePage from './pages/PlantCarePage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
 import PlantDetailPage from './pages/PlantDetailPage';
-import PlantsInventoryPage from './pages/PlantsInventoryPage';
 import NotFound from './pages/NotFound';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import LoginPage from './pages/LoginPage';
@@ -24,6 +22,23 @@ import AllUsersPlants from './pages/AllUsersPlants';
 function AppContent({ isLoggedIn, setIsLoggedIn, notification, setNotification, closeNotification, handleNotification }) {
   const navigate = useNavigate();
   const location = useLocation(); // Track location changes to force re-renders
+  const [currentUser, setCurrentUser] = React.useState(() => {
+    const user = localStorage.getItem('currentUser');
+    return user ? JSON.parse(user) : null;
+  });
+
+  // Listen for currentUser changes in localStorage
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'currentUser') {
+        const user = localStorage.getItem('currentUser');
+        setCurrentUser(user ? JSON.parse(user) : null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Scroll to top when location changes
   useEffect(() => {
@@ -47,7 +62,7 @@ function AppContent({ isLoggedIn, setIsLoggedIn, notification, setNotification, 
 
   return (
     <>
-      <Navigation isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+      <Navigation isLoggedIn={isLoggedIn} onLogout={handleLogout} currentUser={currentUser} />
       
       <main className="app-main">
         <Routes>
@@ -56,16 +71,6 @@ function AppContent({ isLoggedIn, setIsLoggedIn, notification, setNotification, 
           <Route path="/" element={
             <ProtectedRoute requireAdmin={true}>
               <DashboardPage onNotification={handleNotification} />
-            </ProtectedRoute>
-          } />
-          <Route path="/plant-care" element={
-            <ProtectedRoute requireAdmin={true}>
-              <PlantCarePage />
-            </ProtectedRoute>
-          } />
-          <Route path="/plants-inventory" element={
-            <ProtectedRoute requireAdmin={true}>
-              <PlantsInventoryPage />
             </ProtectedRoute>
           } />
           <Route path="/analytics" element={

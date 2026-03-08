@@ -49,26 +49,6 @@ const Navigation = ({ isLoggedIn, onLogout, currentUser }) => {
                   </li>
                   <li className="nav-item">
                     <Link 
-                      to="/plant-care" 
-                      className={`nav-link ${isActive('/plant-care') ? 'active' : ''}`}
-                      onClick={closeMobileMenu}
-                    >
-                      <span className="icon">🌿</span>
-                      Plant Care
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link 
-                      to="/plants-inventory" 
-                      className={`nav-link ${isActive('/plants-inventory') ? 'active' : ''}`}
-                      onClick={closeMobileMenu}
-                    >
-                      <span className="icon">📋</span>
-                      Inventory
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link 
                       to="/analytics" 
                       className={`nav-link ${isActive('/analytics') ? 'active' : ''}`}
                       onClick={closeMobileMenu}
@@ -77,27 +57,29 @@ const Navigation = ({ isLoggedIn, onLogout, currentUser }) => {
                       Analytics
                     </Link>
                   </li>
-                  <li className="nav-item">
-                    <Link 
-                      to="/settings" 
-                      className={`nav-link ${isActive('/settings') ? 'active' : ''}`}
-                      onClick={closeMobileMenu}
-                    >
-                      <span className="icon">⚙️</span>
-                      Settings
-                    </Link>
-                  </li>
                   {currentUser?.role === 'admin' && (
-                    <li className="nav-item">
-                      <Link
-                        to="/all-plants"
-                        className={`nav-link ${isActive('/all-plants') ? 'active' : ''}`}
-                        onClick={closeMobileMenu}
-                      >
-                        <span className="icon">🌍</span>
-                        All Users' Plants
-                      </Link>
-                    </li>
+                    <>
+                      <li className="nav-item">
+                        <Link 
+                          to="/settings" 
+                          className={`nav-link ${isActive('/settings') ? 'active' : ''}`}
+                          onClick={closeMobileMenu}
+                        >
+                          <span className="icon">⚙️</span>
+                          Settings
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          to="/all-plants"
+                          className={`nav-link ${isActive('/all-plants') ? 'active' : ''}`}
+                          onClick={closeMobileMenu}
+                        >
+                          <span className="icon">🌍</span>
+                          All Users' Plants
+                        </Link>
+                      </li>
+                    </>
                   )}
                 </>
               )}
