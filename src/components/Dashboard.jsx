@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatsCard from './StatsCard';
 import AddPlantForm from './AddPlantForm';
@@ -224,9 +224,9 @@ const Dashboard = ({
                   </div>
                   {plantsNeedingAttention.length < stats.needsAttentionCount && (
                     <p className="view-more">
-                      <a href="#" onClick={(e) => {e.preventDefault(); navigate('/plants-inventory')}}>
+                      <button className="view-more-btn" onClick={() => navigate('/plants-inventory')}>
                         View all {stats.needsAttentionCount} plants needing attention →
-                      </a>
+                      </button>
                     </p>
                   )}
                 </section>

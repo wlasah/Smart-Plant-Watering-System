@@ -4,7 +4,6 @@ import '../styles/PlantDetailPage.css';
 
 const PlantDetailPage = ({ plant, onBack, onWater, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedPlant, setEditedPlant] = useState(plant);
 
   if (!plant) {
     return (
@@ -42,11 +41,7 @@ const PlantDetailPage = ({ plant, onBack, onWater, onDelete }) => {
     });
   };
 
-  const handleSaveEdit = () => {
-    // Save edits locally (no API/database)
-    setIsEditing(false);
-    // You could call an onUpdate prop here
-  };
+
 
   // Calculate dynamic status based on moisture level (50% threshold)
   const getDynamicStatus = () => {

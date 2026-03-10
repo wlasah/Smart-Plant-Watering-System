@@ -111,9 +111,7 @@ const ReportingDashboard = () => {
   };
 
   const handleExportReport = () => {
-    const health = getHealthTrend();
     const engagement = getUserEngagement();
-    const problematic = getMostProblematicPlants();
     const stats = getSystemStats();
 
     const csvContent = [

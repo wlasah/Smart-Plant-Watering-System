@@ -31,7 +31,7 @@ export function useDashboard(propPlants) {
       console.error('Error loading plants:', err);
     }
     setLoading(false);
-  }, []); // Empty dependency array - run only on mount
+  }, [propPlants]); // Run when propPlants changes
 
   return {
     plants,

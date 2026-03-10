@@ -8,10 +8,6 @@ const SystemOverview = ({ users, activityLog }) => {
   const totalAdmins = users.filter(u => u.role === 'admin').length;
   const totalRegularUsers = users.filter(u => u.role === 'user' || !u.role).length;
 
-  const recentLogins = activityLog
-    .filter(a => a.type === 'login')
-    .length;
-
   const totalActions = activityLog.length;
 
   if (loading) {

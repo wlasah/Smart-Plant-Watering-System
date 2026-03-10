@@ -33,7 +33,7 @@ const AdminDashboard = ({ onNotification }) => {
 
   const handleAddUser = (userData) => {
     try {
-      const newUser = addUser(userData);
+      addUser(userData);
       setIsAddModalOpen(false);
       if (onNotification) {
         onNotification(`✅ User "${userData.username}" created successfully!`, 'success');
@@ -81,7 +81,7 @@ const AdminDashboard = ({ onNotification }) => {
 
   const handleChangeRole = (userId, newRole) => {
     try {
-      const user = changeUserRole(userId, newRole);
+      changeUserRole(userId, newRole);
       if (onNotification) {
         onNotification(`✅ User role changed to "${newRole}"!`, 'success');
       }

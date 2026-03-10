@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
 import '../styles/AllUsersPlants.css';
 
 const AllUsersPlants = () => {
   const [plants, setPlants] = useState([]);
-  const [users, setUsers] = useState([]);
   const [filteredPlants, setFilteredPlants] = useState([]);
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'card'
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,23 +12,22 @@ const AllUsersPlants = () => {
   const [filterOwner, setFilterOwner] = useState('all');
   const [filterLocation, setFilterLocation] = useState('all');
   const [selectedPlants, setSelectedPlants] = useState([]);
-  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [bulkAction, setBulkAction] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
   const [bulkAction, setBulkAction] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const allPlants = JSON.parse(localStorage.getItem('plants')) || [];
-    const allUsers = JSON.parse(localStorage.getItem('users')) || [];
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setPlants(allPlants);
-    setUsers(allUsers);
     setCurrentUser(user);
     applyFilters(allPlants);
   }, []);
 
   useEffect(() => {
     applyFilters(plants);
-  }, [searchTerm, sortBy, filterHealth, filterOwner, filterLocation]);
+  }, [searchTerm, sortBy, filterHealth, filterOwner, filterLocation, plants]);
 
   const applyFilters = (plantsToFilter) => {
     let filtered = [...plantsToFilter];

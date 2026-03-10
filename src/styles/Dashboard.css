@@ -49,8 +49,8 @@
 .list-action-btn:hover { background: #eff6ff; border-color: #bfdbfe; color: #3b82f6; }
 
 .view-more { margin: 10px 0 0; text-align: right; font-size: 12px; }
-.view-more a { color: var(--accent); text-decoration: none; font-weight: 600; }
-.view-more a:hover { text-decoration: underline; }
+.view-more-btn { background: none; border: none; color: var(--accent); text-decoration: none; font-weight: 600; cursor: pointer; font-size: 12px; padding: 0; font-family: 'DM Sans', sans-serif; transition: color 0.15s; }
+.view-more-btn:hover { text-decoration: underline; color: var(--accent-hover); }
 
 .empty-state { background: white; border: 1px dashed var(--border); border-radius: 10px; padding: 60px 20px; text-align: center; }
 .empty-state-content { max-width: 320px; margin: 0 auto; }

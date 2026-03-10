@@ -23,7 +23,7 @@ const WateringAnalytics = ({ wateringHistory, plants }) => {
     // Generate frequency data
     const freqData = generateFrequencyData();
     setFrequencyData(freqData);
-  }, [wateringHistory, plants, timeRange]);
+  }, [calculateEfficiency, generateFrequencyData, getLeastWateredPlant, getMostWateredPlant, wateringHistory, plants, timeRange]);
 
   const getMostWateredPlant = () => {
     const plantCounts = {};

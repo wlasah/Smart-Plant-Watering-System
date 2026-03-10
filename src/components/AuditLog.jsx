@@ -18,7 +18,7 @@ const AuditLog = () => {
 
   useEffect(() => {
     applyFilters(auditLogs);
-  }, [filterAction, filterUser, filterDateRange, searchTerm]);
+  }, [filterAction, filterUser, filterDateRange, searchTerm, auditLogs]);
 
   const applyFilters = (logs) => {
     let filtered = [...logs];
