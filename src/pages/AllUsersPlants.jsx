@@ -21,11 +21,11 @@ const AllUsersPlants = () => {
     setPlants(allPlants);
     setCurrentUser(user);
     applyFilters(allPlants);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     applyFilters(plants);
-  }, [searchTerm, sortBy, filterHealth, filterOwner, filterLocation, plants]);
+  }, [searchTerm, sortBy, filterHealth, filterOwner, filterLocation, plants]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const applyFilters = (plantsToFilter) => {
     let filtered = [...plantsToFilter];

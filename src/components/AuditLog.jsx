@@ -14,11 +14,11 @@ const AuditLog = () => {
     const logs = JSON.parse(localStorage.getItem('userActivityLog')) || [];
     setAuditLogs(logs);
     applyFilters(logs);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     applyFilters(auditLogs);
-  }, [filterAction, filterUser, filterDateRange, searchTerm, auditLogs]);
+  }, [filterAction, filterUser, filterDateRange, searchTerm, auditLogs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const applyFilters = (logs) => {
     let filtered = [...logs];

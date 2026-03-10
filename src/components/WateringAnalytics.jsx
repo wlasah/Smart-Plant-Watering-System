@@ -23,7 +23,7 @@ const WateringAnalytics = ({ wateringHistory, plants }) => {
     // Generate frequency data
     const freqData = generateFrequencyData();
     setFrequencyData(freqData);
-  }, [calculateEfficiency, generateFrequencyData, getLeastWateredPlant, getMostWateredPlant, wateringHistory, plants, timeRange]);
+  }, [wateringHistory, plants, timeRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getMostWateredPlant = () => {
     const plantCounts = {};
