@@ -88,33 +88,35 @@ const SystemOverview = ({ users, activityLog }) => {
         </div>
       </div>
 
-      <div className="system-health-distribution">
-        <h3>Plant Health Distribution</h3>
-        <div className="distribution-chart">
-          <div className="distribution-item">
-            <div className="distribution-bar">
-              <div className="bar-segment healthy" style={{ width: `${totalPlants > 0 ? (healthyPlants / totalPlants) * 100 : 0}%` }}></div>
-              <div className="bar-segment needs-attention" style={{ width: `${totalPlants > 0 ? (needsAttentionPlants / totalPlants) * 100 : 0}%` }}></div>
-            </div>
-            <div className="distribution-legend">
-              <span><span className="legend-box healthy"></span>Healthy ({healthyPlants})</span>
-              <span><span className="legend-box needs-attention"></span>Needs Attention ({needsAttentionPlants})</span>
+      <div className="distributions-wrapper">
+        <div className="system-health-distribution">
+          <h3>Plant Health Distribution</h3>
+          <div className="distribution-chart">
+            <div className="distribution-item">
+              <div className="distribution-bar">
+                <div className="bar-segment healthy" style={{ width: `${totalPlants > 0 ? (healthyPlants / totalPlants) * 100 : 0}%` }}></div>
+                <div className="bar-segment needs-attention" style={{ width: `${totalPlants > 0 ? (needsAttentionPlants / totalPlants) * 100 : 0}%` }}></div>
+              </div>
+              <div className="distribution-legend">
+                <span><span className="legend-box healthy"></span>Healthy ({healthyPlants})</span>
+                <span><span className="legend-box needs-attention"></span>Needs Attention ({needsAttentionPlants})</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="user-distribution">
-        <h3>User Role Distribution</h3>
-        <div className="distribution-chart">
-          <div className="distribution-item">
-            <div className="distribution-bar">
-              <div className="bar-segment admin" style={{ width: `${totalUsers > 0 ? (totalAdmins / totalUsers) * 100 : 0}%` }}></div>
-              <div className="bar-segment user" style={{ width: `${totalUsers > 0 ? (totalRegularUsers / totalUsers) * 100 : 0}%` }}></div>
-            </div>
-            <div className="distribution-legend">
-              <span><span className="legend-box admin"></span>Admins ({totalAdmins})</span>
-              <span><span className="legend-box user"></span>Users ({totalRegularUsers})</span>
+        <div className="user-distribution">
+          <h3>User Role Distribution</h3>
+          <div className="distribution-chart">
+            <div className="distribution-item">
+              <div className="distribution-bar">
+                <div className="bar-segment admin" style={{ width: `${totalUsers > 0 ? (totalAdmins / totalUsers) * 100 : 0}%` }}></div>
+                <div className="bar-segment user" style={{ width: `${totalUsers > 0 ? (totalRegularUsers / totalUsers) * 100 : 0}%` }}></div>
+              </div>
+              <div className="distribution-legend">
+                <span><span className="legend-box admin"></span>Admins ({totalAdmins})</span>
+                <span><span className="legend-box user"></span>Users ({totalRegularUsers})</span>
+              </div>
             </div>
           </div>
         </div>

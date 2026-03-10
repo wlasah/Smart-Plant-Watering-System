@@ -1,61 +1,63 @@
 .activity-log {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 12px;
 }
 
 .log-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .log-header h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
+  font-weight: 600;
   color: #333;
 }
 
 .log-count {
-  font-size: 12px;
+  font-size: 11px;
   color: #999;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   font-weight: 600;
 }
 
 .empty-log {
   text-align: center;
-  padding: 40px 20px;
+  padding: 24px 12px;
   color: #999;
+  font-size: 13px;
 }
 
 .log-entries {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-height: 500px;
+  gap: 8px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
 .log-entry {
   display: flex;
-  gap: 12px;
-  padding: 12px;
-  border-left: 4px solid #ddd;
+  gap: 10px;
+  padding: 10px;
+  border-left: 3px solid #ddd;
   border-radius: 4px;
   background: #f8f9fa;
   transition: all 0.2s;
 }
 
 .log-entry:hover {
-  background: #f0f0f0;
-  transform: translateX(4px);
+  background: #f5f5f5;
+  transform: translateX(2px);
 }
 
 .log-entry.success {

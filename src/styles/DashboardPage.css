@@ -1,26 +1,7 @@
-/* Dashboard Page Specific Styles */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
-.dashboard-page {
-  animation: fadeIn 0.3s ease-in;
-}
+.dashboard-page { animation: fadeIn 0.25s ease-in; font-family: 'DM Sans', sans-serif; }
+.page-container.dashboard-page { padding: 0; background: #f8fafc; min-height: 100vh; }
+.dashboard { width: 100%; animation: fadeIn 0.25s ease-in; }
 
-.page-container.dashboard-page {
-  padding: 20px 20px;
-}
-
-/* Ensure Dashboard component displays properly */
-.dashboard {
-  width: 100%;
-  animation: fadeIn 0.3s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }

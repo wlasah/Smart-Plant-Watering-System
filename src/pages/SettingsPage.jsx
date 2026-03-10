@@ -25,7 +25,7 @@ const SettingsPage = () => {
   return (
     <div className="admin-page-wrapper">
       <AdminSidebar currentUser={currentUser} onLogout={() => {}} />
-      <div className="page-container settings-page">
+      <div className="settings-page-inner">
         <div className="settings-tabs">
           {tabs.map(tab => (
             <button
