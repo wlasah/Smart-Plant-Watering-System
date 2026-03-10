@@ -5,9 +5,9 @@ export function useRegister(onRegister, navigate) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('user');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const role = 'admin'; // All users are admins in this system
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -41,8 +41,6 @@ export function useRegister(onRegister, navigate) {
     setPassword,
     confirmPassword,
     setConfirmPassword,
-    role,
-    setRole,
     error,
     success,
     handleSubmit

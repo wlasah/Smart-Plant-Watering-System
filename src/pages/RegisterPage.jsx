@@ -14,35 +14,71 @@ const RegisterPage = ({ onRegister }) => {
     setPassword,
     confirmPassword,
     setConfirmPassword,
-    role,
-    setRole,
     error,
     success,
     handleSubmit
   } = useRegister(onRegister, navigate);
 
   return (
-    <div className="form-page">
-      <h2>Register</h2>
-      <form className="form" onSubmit={handleSubmit}>
-        <label>Username</label>
-        <input value={username} onChange={e => setUsername(e.target.value)} required />
-        <label>Email</label>
-        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-        <label>Password</label>
-        <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-        <label>Confirm Password</label>
-        <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
-        <label>Role</label>
-        <select value={role} onChange={e => setRole(e.target.value)} required>
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
-        {error && <div className="form-error">{error}</div>}
-        {success && <div className="form-success">Registration successful! <Link to="/login">Login</Link></div>}
-        <button type="submit" className="form-btn">Register</button>
-      </form>
-      <p>Already have an account? <Link to="/login">Login</Link></p>
+    <div className="form-page-wrapper">
+      <div className="form-side-decoration"></div>
+      <div className="form-page">
+        <div className="form-header-section">
+          <h1>🌿 Create Admin Account</h1>
+          <p>Join the Smart Plant Watering System</p>
+        </div>
+        <form className="form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Username</label>
+            <input 
+              className="form-input-enhanced"
+              value={username} 
+              onChange={e => setUsername(e.target.value)} 
+              placeholder="Choose a username"
+              required 
+            />
+          </div>
+          <div className="form-group">
+            <label>Email</label>
+            <input 
+              className="form-input-enhanced"
+              type="email" 
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
+              placeholder="your@email.com"
+              required 
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input 
+              className="form-input-enhanced"
+              type="password" 
+              value={password} 
+              onChange={e => setPassword(e.target.value)} 
+              placeholder="••••••••"
+              required 
+            />
+          </div>
+          <div className="form-group">
+            <label>Confirm Password</label>
+            <input 
+              className="form-input-enhanced"
+              type="password" 
+              value={confirmPassword} 
+              onChange={e => setConfirmPassword(e.target.value)} 
+              placeholder="••••••••"
+              required 
+            />
+          </div>
+          {error && <div className="form-error">{error}</div>}
+          {success && <div className="form-success">Registration successful! <Link to="/login">Login now</Link></div>}
+          <button type="submit" className="form-btn-large">Create Account</button>
+        </form>
+        <div className="form-footer">
+          <p>Already have an account? <Link to="/login" className="link-primary">Login here</Link></p>
+        </div>
+      </div>
     </div>
   );
 };
