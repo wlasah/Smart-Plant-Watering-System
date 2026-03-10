@@ -164,7 +164,6 @@ const AllUsersPlants = () => {
 
     setSelectedPlants([]);
     setBulkAction('');
-    setShowBulkActions(false);
   };
 
   const clearFilters = () => {
