@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+// Smart Plant Watering System - Deployed to Vercel
 import './App.css';
 
 // Components
