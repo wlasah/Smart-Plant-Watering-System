@@ -14,8 +14,6 @@ const AllUsersPlants = () => {
   const [selectedPlants, setSelectedPlants] = useState([]);
   const [bulkAction, setBulkAction] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
-  const [bulkAction, setBulkAction] = useState('');
-  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const allPlants = JSON.parse(localStorage.getItem('plants')) || [];
