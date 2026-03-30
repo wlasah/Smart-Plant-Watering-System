@@ -7,7 +7,6 @@ const SystemOverview = ({ users, activityLog }) => {
 
   const totalAdmins = users.filter(u => u.role === 'admin').length;
   const totalRegularUsers = users.filter(u => u.role === 'user' || !u.role).length;
-
   const totalActions = activityLog.length;
 
   if (loading) {
@@ -23,99 +22,110 @@ const SystemOverview = ({ users, activityLog }) => {
 
   return (
     <div className="system-overview">
+
+      {/* Header */}
       <div className="overview-header">
         <h2>System Overview</h2>
         <p>Key metrics and statistics</p>
       </div>
 
-      <div className="overview-grid">
-        <div className="overview-card total-users">
-          <div className="card-icon">👥</div>
-          <div className="card-content">
-            <h3>Total Users</h3>
-            <p className="card-value">{totalUsers}</p>
-            <span className="card-label">System users</span>
-          </div>
-        </div>
+      {/* Body: stat cards (left) + distributions (right) */}
+      <div className="overview-body">
 
-        <div className="overview-card total-plants">
-          <div className="card-icon">🌱</div>
-          <div className="card-content">
-            <h3>Total Plants</h3>
-            <p className="card-value">{totalPlants}</p>
-            <span className="card-label">Across all users</span>
-          </div>
-        </div>
+        <div className="metrics-panel">
+          {/* Stat cards */}
+          <div className="overview-grid">
+            <div className="overview-card total-users">
+              <div className="card-icon">👥</div>
+              <div className="card-content">
+                <h3>Total Users</h3>
+                <p className="card-value">{totalUsers}</p>
+                <span className="card-label">System users</span>
+              </div>
+            </div>
 
-        <div className="overview-card healthy-plants">
-          <div className="card-icon">✅</div>
-          <div className="card-content">
-            <h3>Healthy Plants</h3>
-            <p className="card-value">{healthyPlants}</p>
-            <span className="card-label">Moisture ≥ 50%</span>
+            <div className="overview-card total-plants">
+            <div className="card-icon">🌱</div>
+            <div className="card-content">
+              <h3>Total Plants</h3>
+              <p className="card-value">{totalPlants}</p>
+              <span className="card-label">Across all users</span>
+            </div>
           </div>
-        </div>
 
-        <div className="overview-card needs-attention">
-          <div className="card-icon">⚠️</div>
-          <div className="card-content">
-            <h3>Needs Attention</h3>
-            <p className="card-value">{needsAttentionPlants}</p>
-            <span className="card-label">Moisture &lt; 50%</span>
+          <div className="overview-card healthy-plants">
+            <div className="card-icon">✅</div>
+            <div className="card-content">
+              <h3>Healthy Plants</h3>
+              <p className="card-value">{healthyPlants}</p>
+              <span className="card-label">Moisture ≥ 50%</span>
+            </div>
           </div>
-        </div>
 
-        <div className="overview-card average-moisture">
-          <div className="card-icon">💧</div>
-          <div className="card-content">
-            <h3>Average Moisture</h3>
-            <p className="card-value">{averageMoisture}%</p>
-            <span className="card-label">System average</span>
+          <div className="overview-card needs-attention">
+            <div className="card-icon">⚠️</div>
+            <div className="card-content">
+              <h3>Needs Attention</h3>
+              <p className="card-value">{needsAttentionPlants}</p>
+              <span className="card-label">Moisture &lt; 50%</span>
+            </div>
           </div>
-        </div>
 
-        <div className="overview-card activity-count">
-          <div className="card-icon">📊</div>
-          <div className="card-content">
-            <h3>Total Actions</h3>
-            <p className="card-value">{totalActions}</p>
-            <span className="card-label">System activity</span>
+          <div className="overview-card average-moisture">
+            <div className="card-icon">💧</div>
+            <div className="card-content">
+              <h3>Avg Moisture</h3>
+              <p className="card-value">{averageMoisture}%</p>
+              <span className="card-label">System average</span>
+            </div>
+          </div>
+
+          <div className="overview-card activity-count">
+            <div className="card-icon">📊</div>
+            <div className="card-content">
+              <h3>Total Actions</h3>
+              <p className="card-value">{totalActions}</p>
+              <span className="card-label">System activity</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="distributions-wrapper">
-        <div className="system-health-distribution">
-          <h3>Plant Health Distribution</h3>
-          <div className="distribution-chart">
-            <div className="distribution-item">
-              <div className="distribution-bar">
-                <div className="bar-segment healthy" style={{ width: `${totalPlants > 0 ? (healthyPlants / totalPlants) * 100 : 0}%` }}></div>
-                <div className="bar-segment needs-attention" style={{ width: `${totalPlants > 0 ? (needsAttentionPlants / totalPlants) * 100 : 0}%` }}></div>
+        {/* Distribution panels */}
+        <div className="distributions-wrapper">
+          <div className="system-health-distribution">
+            <h3>Plant Health Distribution</h3>
+            <div className="distribution-chart">
+              <div className="distribution-item">
+                <div className="distribution-bar">
+                  <div className="bar-segment healthy" style={{ width: `${totalPlants > 0 ? (healthyPlants / totalPlants) * 100 : 0}%` }}></div>
+                  <div className="bar-segment needs-attention" style={{ width: `${totalPlants > 0 ? (needsAttentionPlants / totalPlants) * 100 : 0}%` }}></div>
+                </div>
+                <div className="distribution-legend">
+                  <span><span className="legend-box healthy"></span>Healthy ({healthyPlants})</span>
+                  <span><span className="legend-box needs-attention"></span>Needs Attention ({needsAttentionPlants})</span>
+                </div>
               </div>
-              <div className="distribution-legend">
-                <span><span className="legend-box healthy"></span>Healthy ({healthyPlants})</span>
-                <span><span className="legend-box needs-attention"></span>Needs Attention ({needsAttentionPlants})</span>
+            </div>
+          </div>
+
+          <div className="user-distribution">
+            <h3>User Role Distribution</h3>
+            <div className="distribution-chart">
+              <div className="distribution-item">
+                <div className="distribution-bar">
+                  <div className="bar-segment admin" style={{ width: `${totalUsers > 0 ? (totalAdmins / totalUsers) * 100 : 0}%` }}></div>
+                  <div className="bar-segment user" style={{ width: `${totalUsers > 0 ? (totalRegularUsers / totalUsers) * 100 : 0}%` }}></div>
+                </div>
+                <div className="distribution-legend">
+                  <span><span className="legend-box admin"></span>Admins ({totalAdmins})</span>
+                  <span><span className="legend-box user"></span>Users ({totalRegularUsers})</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="user-distribution">
-          <h3>User Role Distribution</h3>
-          <div className="distribution-chart">
-            <div className="distribution-item">
-              <div className="distribution-bar">
-                <div className="bar-segment admin" style={{ width: `${totalUsers > 0 ? (totalAdmins / totalUsers) * 100 : 0}%` }}></div>
-                <div className="bar-segment user" style={{ width: `${totalUsers > 0 ? (totalRegularUsers / totalUsers) * 100 : 0}%` }}></div>
-              </div>
-              <div className="distribution-legend">
-                <span><span className="legend-box admin"></span>Admins ({totalAdmins})</span>
-                <span><span className="legend-box user"></span>Users ({totalRegularUsers})</span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

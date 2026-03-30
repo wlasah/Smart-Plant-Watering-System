@@ -179,8 +179,10 @@ const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => 
                     />
                   </td>
                   <td className="username-cell">
-                    <span className="username">{user.username}</span>
-                    {user.role === 'admin' && <span className="admin-badge">ADMIN</span>}
+                    <div className="username-cell-inner">
+                      <span className="username">{user.username}</span>
+                      {user.role === 'admin' ? <span className="user-badge-admin">ADMIN</span> : <span className="user-badge-user">USER</span>}
+                    </div>
                   </td>
                   <td className="email-cell">{user.email || '-'}</td>
                   <td className="plants-cell">
@@ -196,7 +198,11 @@ const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => 
                   <td className="engagement-cell">
                     <div className="engagement-bar">
                       <div 
-                        className="engagement-fill"
+                        className={`engagement-fill ${
+                          metrics.engagementScore >= 75 ? 'excellent' :
+                          metrics.engagementScore >= 50 ? 'high' :
+                          metrics.engagementScore >= 25 ? 'medium' : 'low'
+                        }`}
                         style={{ width: `${metrics.engagementScore || 0}%` }}
                       ></div>
                       <span className="engagement-text">{metrics.engagementScore || 0}%</span>
@@ -212,41 +218,45 @@ const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => 
                       <option value="admin">Admin</option>
                     </select>
                   </td>
-                  <td className="date-cell">
-                    {metrics.lastActivity 
-                      ? metrics.lastActivity.toLocaleDateString() + ' ' + metrics.lastActivity.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                      : 'Never'}
+                  <td className={`date-cell ${metrics.lastActivity ? 'active' : ''}`}>
+                    <div className="date-cell-inner">
+                      {metrics.lastActivity 
+                        ? metrics.lastActivity.toLocaleDateString() + ' ' + metrics.lastActivity.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : 'Never'}
+                    </div>
                   </td>
                   <td className="actions-cell">
-                    <button
-                      className="btn-action btn-edit"
-                      onClick={() => onEdit(user)}
-                      title="Edit user"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      className="btn-action btn-reset"
-                      onClick={() => {
-                        if (window.confirm(`Reset password for "${user.username}"?`)) {
-                          alert('✅ Password reset link would be sent via email (demo)');
-                        }
-                      }}
-                      title="Reset password"
-                    >
-                      🔑
-                    </button>
-                    <button
-                      className="btn-action btn-delete"
-                      onClick={() => {
-                        if (window.confirm(`Are you sure you want to delete user "${user.username}"?`)) {
-                          onDelete(userId);
-                        }
-                      }}
-                      title="Delete user"
-                    >
-                      🗑️
-                    </button>
+                    <div className="actions-cell-inner">
+                      <button
+                        className="btn-action btn-edit"
+                        onClick={() => onEdit(user)}
+                        title="Edit user"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="btn-action btn-reset"
+                        onClick={() => {
+                          if (window.confirm(`Reset password for "${user.username}"?`)) {
+                            alert('✅ Password reset link would be sent via email (demo)');
+                          }
+                        }}
+                        title="Reset password"
+                      >
+                        🔑
+                      </button>
+                      <button
+                        className="btn-action btn-delete"
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to delete user "${user.username}"?`)) {
+                            onDelete(userId);
+                          }
+                        }}
+                        title="Delete user"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );

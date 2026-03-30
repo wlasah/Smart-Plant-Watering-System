@@ -9,6 +9,8 @@ const AdminSidebar = ({ onLogout, currentUser }) => {
 
   const isActive = (path) => location.pathname === path;
 
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('currentUser');
@@ -24,17 +26,36 @@ const AdminSidebar = ({ onLogout, currentUser }) => {
   ];
 
   return (
-    <aside className={`admin-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-      {/* Header with toggle */}
-      <div className="sidebar-header">
-        <button 
-          className="sidebar-toggle"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {isCollapsed ? '→' : '←'}
-        </button>
-      </div>
+    <>
+      <div
+        className={`mobile-sidebar-backdrop ${isMobileOpen ? 'show' : ''}`}
+        onClick={() => setIsMobileOpen(false)}
+      />
+      <button
+        className="mobile-menu-trigger"
+        onClick={() => setIsMobileOpen(true)}
+        aria-label="Open menu"
+      >
+        ☰
+      </button>
+      <aside className={`admin-sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'open' : ''}`}>
+        {/* Header with toggle */}
+        <div className="sidebar-header">
+          <button 
+            className="sidebar-toggle"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isCollapsed ? '→' : '←'}
+          </button>
+          <button
+            className="mobile-close-btn"
+            onClick={() => setIsMobileOpen(false)}
+            aria-label="Close sidebar"
+          >
+            ×
+          </button>
+        </div>
 
       {/* Admin Profile Section */}
       <div className="admin-profile">
@@ -82,6 +103,7 @@ const AdminSidebar = ({ onLogout, currentUser }) => {
         </button>
       </div>
     </aside>
+    </>
   );
 };
 
