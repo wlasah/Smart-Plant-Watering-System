@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminUserList from '../components/AdminUserList';
 import AddUserModal from '../components/AddUserModal';
@@ -14,6 +15,7 @@ import '../styles/AdminDashboard.css';
 
 const AdminDashboard = ({ onNotification }) => {
   const { users, loading, addUser, updateUser, deleteUser, changeUserRole, getActivityLog } = useUserManagement();
+  const navigate = useNavigate();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -46,11 +48,33 @@ const AdminDashboard = ({ onNotification }) => {
   };
 
   const handleEditUser = (user) => {
+    const isSelf = currentUser && (String(user.id) === String(currentUser.id) || user.username === currentUser.username);
+    
+    // Prevent editing other admins
+    if (user.role === 'admin' && !isSelf) {
+      if (onNotification) onNotification('❌ Cannot edit other admin accounts', 'error');
+      return;
+    }
+    
     setSelectedUser(user);
     setIsEditModalOpen(true);
   };
 
   const handleUpdateUser = (userId, userData) => {
+    const targetUser = users.find(u => u.id === userId || u.username === userId);
+    if (!targetUser) {
+      if (onNotification) onNotification('❌ User not found', 'error');
+      return;
+    }
+
+    const isSelf = currentUser && (String(targetUser.id) === String(currentUser.id) || targetUser.username === currentUser.username);
+    
+    // Prevent updating other admins (strict check)
+    if (targetUser.role === 'admin' && !isSelf) {
+      if (onNotification) onNotification('❌ Cannot update other admin accounts', 'error');
+      return;
+    }
+    
     try {
       updateUser(userId, userData);
       setIsEditModalOpen(false);
@@ -66,8 +90,15 @@ const AdminDashboard = ({ onNotification }) => {
   };
 
   const handleDeleteUser = (userId) => {
+    const userToDelete = users.find(u => u.id === userId || u.username === userId);
+    
+    // Prevent deleting other admins (or self delete as well for safety)
+    if (userToDelete.role === 'admin') {
+      if (onNotification) onNotification('❌ Cannot delete admin accounts', 'error');
+      return;
+    }
+    
     try {
-      const userToDelete = users.find(u => u.id === userId || u.username === userId);
       deleteUser(userId);
       if (onNotification) {
         onNotification(`🗑️ User "${userToDelete?.username}" deleted successfully!`, 'success');
@@ -80,6 +111,36 @@ const AdminDashboard = ({ onNotification }) => {
   };
 
   const handleChangeRole = (userId, newRole) => {
+    const targetUser = users.find(u => u.id === userId || u.username === userId);
+    if (!targetUser) {
+      if (onNotification) onNotification('❌ User not found', 'error');
+      return;
+    }
+
+    const isCurrent = currentUser && (targetUser.id === currentUser.id || targetUser.username === currentUser.username);
+
+    // Prevent admins from changing roles of other admins
+    if (targetUser.role === 'admin' && !isCurrent) {
+      if (onNotification) onNotification('❌ Cannot change role of another admin', 'error');
+      return;
+    }
+
+    // If admin self-demotes, apply role change then force sign-out immediately
+    if (isCurrent && targetUser.role === 'admin' && newRole === 'user') {
+      try {
+        changeUserRole(userId, newRole);
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('currentUser');
+        if (onNotification) onNotification('⚠️ You changed your role to User. Signing out for security.', 'info');
+        navigate('/login', { replace: true });
+        return;
+      } catch (error) {
+        if (onNotification) onNotification(`❌ Error changing role: ${error.message}`, 'error');
+        return;
+      }
+    }
+
+    // Normal role update
     try {
       changeUserRole(userId, newRole);
       if (onNotification) {
@@ -154,6 +215,7 @@ const AdminDashboard = ({ onNotification }) => {
             <section className="admin-section">
               <AdminUserList
                 users={users}
+                currentUser={currentUser}
                 onEdit={handleEditUser}
                 onDelete={handleDeleteUser}
                 onChangeRole={handleChangeRole}

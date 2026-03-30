@@ -52,13 +52,37 @@ export function useUserManagement() {
   };
 
   const changeUserRole = (userId, newRole) => {
+    const currentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
+    const targetUser = users.find(u => u.id === userId || u.username === userId);
+
+    if (!targetUser) {
+      throw new Error('User not found');
+    }
+
+    const isCurrent = currentUser && (currentUser.id === targetUser.id || currentUser.username === targetUser.username);
+
+    // Prevent other admins from being demoted by non-self
+    if (targetUser.role === 'admin' && !isCurrent) {
+      throw new Error('Cannot change role of another admin');
+    }
+
     const updatedUsers = users.map(u =>
       (u.id === userId || u.username === userId) ? { ...u, role: newRole } : u
     );
+
     setUsers(updatedUsers);
     localStorage.setItem('users', JSON.stringify(updatedUsers));
 
+    // If current user self-demotes from admin to user, sign out
+    if (isCurrent && targetUser.role === 'admin' && newRole === 'user') {
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('currentUser');
+    } else if (isCurrent) {
+      localStorage.setItem('currentUser', JSON.stringify({ ...currentUser, role: newRole }));
+    }
+
     const user = updatedUsers.find(u => u.id === userId || u.username === userId);
+
     // Log activity
     logUserActivity('update', `User "${user?.username}" role changed to "${newRole}"`, 'role_change');
 

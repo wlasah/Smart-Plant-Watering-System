@@ -36,6 +36,15 @@ const EditUserModal = ({ isOpen, user, onClose, onUpdate }) => {
     e.preventDefault();
     setError('');
 
+    // AGGRESSIVE CHECK: Prevent any edit of admin accounts except self
+    const currentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
+    const isEditingOtherAdmin = user.role === 'admin' && !(currentUser && (String(user.id) === String(currentUser.id) || user.username === currentUser.username));
+    
+    if (isEditingOtherAdmin) {
+      setError('❌ Access denied: Cannot edit admin accounts');
+      return;
+    }
+
     if (!formData.username.trim()) {
       setError('Username is required');
       return;
@@ -76,6 +85,15 @@ const EditUserModal = ({ isOpen, user, onClose, onUpdate }) => {
           <h2>Edit User</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
+
+        {user.role === 'admin' && !(localStorage.getItem('currentUser') && (() => {
+          const cu = JSON.parse(localStorage.getItem('currentUser'));
+          return String(user.id) === String(cu.id) || user.username === cu.username;
+        })()) && (
+          <div style={{ backgroundColor: '#fee', color: '#c33', padding: '12px 16px', margin: '0 16px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: '500' }}>
+            ⚠️ This is an admin account. Editing is restricted.
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
@@ -130,6 +148,10 @@ const EditUserModal = ({ isOpen, user, onClose, onUpdate }) => {
               name="role"
               value={formData.role}
               onChange={handleChange}
+              disabled={user.role === 'admin' && !(localStorage.getItem('currentUser') && (() => {
+                const cu = JSON.parse(localStorage.getItem('currentUser'));
+                return String(user.id) === String(cu.id) || user.username === cu.username;
+              })())}
               required
             >
               <option value="user">User</option>

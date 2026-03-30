@@ -40,7 +40,10 @@ const SystemOverview = ({ users, activityLog }) => {
               <div className="card-content">
                 <h3>Total Users</h3>
                 <p className="card-value">{totalUsers}</p>
-                <span className="card-label">System users</span>
+                <div className="card-label-vertical">
+                  <span>{totalAdmins} admins</span>
+                  <span>{totalRegularUsers} users</span>
+                </div>
               </div>
             </div>
 

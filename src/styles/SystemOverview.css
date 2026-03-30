@@ -239,6 +239,22 @@
   text-overflow: ellipsis;
 }
 
+.card-label-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 10px;
+  color: #b0bec5;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.card-label-vertical span {
+  font-size: 10px;
+  color: #b0bec5;
+  font-weight: 500;
+}
+
 /* Per-card accent colours */
 .overview-card.total-users::before     { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
 .overview-card.total-users .card-value { color: #6366f1; }

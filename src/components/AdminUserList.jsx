@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/AdminUserList.css';
 
-const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => {
+const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onAddUser }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [userMetrics, setUserMetrics] = useState({});
   const [showBulkActions, setShowBulkActions] = useState(false);
@@ -52,6 +52,19 @@ const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => 
       return;
     }
 
+    // guard bulk admin rules - prevent any ops on admin users
+    const selectedUsersData = selectedUsers
+      .map(uid => users.find(u => u.id === uid || u.username === uid))
+      .filter(Boolean);
+
+    const adminsInSelection = selectedUsersData.filter(u => u.role === 'admin' && !(currentUser && (currentUser.id === u.id || currentUser.username === u.username)));
+    const allAdmins = selectedUsersData.filter(u => u.role === 'admin');
+    
+    if (adminsInSelection.length > 0) {
+      alert('❌ Cannot perform actions on other admin accounts');
+      return;
+    }
+
     switch (bulkAction) {
       case 'make_admin':
         selectedUsers.forEach(userId => {
@@ -60,6 +73,10 @@ const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => 
         alert(`✅ Made ${selectedUsers.length} user(s) admin!`);
         break;
       case 'make_user':
+        if (allAdmins.length > 0) {
+          alert('❌ Cannot downgrade admin accounts in bulk');
+          return;
+        }
         selectedUsers.forEach(userId => {
           onChangeRole(userId, 'user');
         });
@@ -213,6 +230,8 @@ const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => 
                       value={user.role || 'user'}
                       onChange={(e) => onChangeRole(userId, e.target.value)}
                       className={`role-select role-${user.role}`}
+                      disabled={user.role === 'admin' && !(currentUser && (currentUser.id === user.id || currentUser.username === user.username))}
+                      title={user.role === 'admin' && !(currentUser && (currentUser.id === user.id || currentUser.username === user.username)) ? 'Cannot change another admin role' : 'Change role'}
                     >
                       <option value="user">User</option>
                       <option value="admin">Admin</option>
@@ -227,13 +246,15 @@ const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => 
                   </td>
                   <td className="actions-cell">
                     <div className="actions-cell-inner">
-                      <button
-                        className="btn-action btn-edit"
-                        onClick={() => onEdit(user)}
-                        title="Edit user"
-                      >
-                        ✏️
-                      </button>
+                      {user.role !== 'admin' || (currentUser && (String(user.id) === String(currentUser.id) || user.username === currentUser.username)) ? (
+                        <button
+                          className="btn-action btn-edit"
+                          onClick={() => onEdit(user)}
+                          title="Edit user"
+                        >
+                          ✏️
+                        </button>
+                      ) : null}
                       <button
                         className="btn-action btn-reset"
                         onClick={() => {
@@ -241,7 +262,9 @@ const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => 
                             alert('✅ Password reset link would be sent via email (demo)');
                           }
                         }}
-                        title="Reset password"
+                        disabled={user.role === 'admin'}
+                        title={user.role === 'admin' ? 'Cannot reset admin password' : 'Reset password'}
+                        style={user.role === 'admin' ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                       >
                         🔑
                       </button>
@@ -252,7 +275,9 @@ const AdminUserList = ({ users, onEdit, onDelete, onChangeRole, onAddUser }) => 
                             onDelete(userId);
                           }
                         }}
-                        title="Delete user"
+                        disabled={user.role === 'admin'}
+                        title={user.role === 'admin' ? 'Cannot delete admin accounts' : 'Delete user'}
+                        style={user.role === 'admin' ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                       >
                         🗑️
                       </button>
