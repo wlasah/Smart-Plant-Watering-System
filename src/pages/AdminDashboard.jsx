@@ -30,7 +30,20 @@ const AdminDashboard = ({ onNotification }) => {
     
     // Load current user from localStorage
     const user = JSON.parse(localStorage.getItem('currentUser'));
-    setCurrentUser(user);
+    if (user) {
+      setCurrentUser(user);
+    }
+
+    // Listen for storage changes (e.g., role changes)
+    const handleStorageChange = () => {
+      const updatedUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (updatedUser) {
+        setCurrentUser(updatedUser);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const handleAddUser = (userData) => {

@@ -51,6 +51,8 @@ export function useUserManagement() {
     return true;
   };
 
+  const isAdminRole = (role) => String(role || '').trim().toLowerCase() === 'admin';
+
   const changeUserRole = (userId, newRole) => {
     const currentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
     const targetUser = users.find(u => u.id === userId || u.username === userId);
@@ -62,7 +64,7 @@ export function useUserManagement() {
     const isCurrent = currentUser && (currentUser.id === targetUser.id || currentUser.username === targetUser.username);
 
     // Prevent other admins from being demoted by non-self
-    if (targetUser.role === 'admin' && !isCurrent) {
+    if (isAdminRole(targetUser.role) && !isCurrent) {
       throw new Error('Cannot change role of another admin');
     }
 

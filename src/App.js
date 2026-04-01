@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 // Smart Plant Watering System - Deployed to Vercel
 import './App.css';
 
@@ -154,6 +155,7 @@ function App() {
   return (
     <Router>
       <div className="App">
+        <Analytics />
         <AppContent 
           isLoggedIn={isLoggedIn} 
           setIsLoggedIn={setIsLoggedIn} 

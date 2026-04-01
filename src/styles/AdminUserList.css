@@ -297,6 +297,40 @@
 .role-select.role-user  { color: #047857; border-color: #a7f3d0; background: #f0fdf4; }
 .role-select:focus { outline: none; border-color: #6366f1; }
 
+.role-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7c3aed;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+}
+
+.role-badge-admin {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #7c3aed;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  text-decoration: none;
+}
+
+.action-blocked {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+}
+
 /* actions-cell is a <td> — keep it as a table cell, flex goes on inner wrapper */
 .actions-cell { 
   width: auto;

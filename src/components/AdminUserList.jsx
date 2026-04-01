@@ -30,6 +30,18 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
     setUserMetrics(metrics);
   }, [users]);
 
+  // Helper function to check if a user is the current user
+  // IMPORTANT: Frontend-only app - use ONLY username comparison, not ID
+  const isCurrentUser = (user) => {
+    if (!currentUser) return false;
+    // ONLY compare by username/email - IDs in frontend-only apps are unreliable
+    const isCurrentByUsername = user.username === currentUser.username;
+    const isCurrentByEmail = user.email === currentUser.email;
+    const result = isCurrentByUsername || isCurrentByEmail;
+    console.log(`[isCurrentUser] ${user.username}: username match=${isCurrentByUsername}, email match=${isCurrentByEmail}, currentUser=${currentUser?.username}, result=${result}`);
+    return result;
+  };
+
   const handleSelectUser = (userId) => {
     setSelectedUsers(prev => 
       prev.includes(userId) 
@@ -52,12 +64,13 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
       return;
     }
 
-    // guard bulk admin rules - prevent any ops on admin users
+    // guard bulk admin rules - prevent any ops on admin users (except current user)
     const selectedUsersData = selectedUsers
       .map(uid => users.find(u => u.id === uid || u.username === uid))
       .filter(Boolean);
 
-    const adminsInSelection = selectedUsersData.filter(u => u.role === 'admin' && !(currentUser && (currentUser.id === u.id || currentUser.username === u.username)));
+    // Can only manage admin if it's the current user
+    const adminsInSelection = selectedUsersData.filter(u => u.role === 'admin' && u.username !== currentUser?.username);
     const allAdmins = selectedUsersData.filter(u => u.role === 'admin');
     
     if (adminsInSelection.length > 0) {
@@ -182,12 +195,14 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
           </thead>
           <tbody>
             {users.map(user => {
-              const userId = user.id || user.username;
+              // NORMALIZE: Ensure user has a role property (default to 'user')
+              const normalizedUser = { ...user, role: user.role || 'user' };
+              const userId = normalizedUser.id || normalizedUser.username;
               const metrics = userMetrics[userId] || {};
               const isSelected = selectedUsers.includes(userId);
 
               return (
-                <tr key={userId} className={`user-row ${user.role} ${isSelected ? 'selected' : ''}`}>
+                <tr key={userId} className={`user-row ${normalizedUser.role} ${isSelected ? 'selected' : ''}`}>
                   <td className="checkbox-cell">
                     <input 
                       type="checkbox"
@@ -197,11 +212,11 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
                   </td>
                   <td className="username-cell">
                     <div className="username-cell-inner">
-                      <span className="username">{user.username}</span>
-                      {user.role === 'admin' ? <span className="user-badge-admin">ADMIN</span> : <span className="user-badge-user">USER</span>}
+                      <span className="username">{normalizedUser.username}</span>
+                      {normalizedUser.role === 'admin' ? <span className="user-badge-admin">ADMIN</span> : <span className="user-badge-user">USER</span>}
                     </div>
                   </td>
-                  <td className="email-cell">{user.email || '-'}</td>
+                  <td className="email-cell">{normalizedUser.email || '-'}</td>
                   <td className="plants-cell">
                     <span className="metric-value">
                       🌱 {metrics.plantCount || 0}
@@ -226,16 +241,30 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
                     </div>
                   </td>
                   <td className="role-cell">
-                    <select
-                      value={user.role || 'user'}
-                      onChange={(e) => onChangeRole(userId, e.target.value)}
-                      className={`role-select role-${user.role}`}
-                      disabled={user.role === 'admin' && !(currentUser && (currentUser.id === user.id || currentUser.username === user.username))}
-                      title={user.role === 'admin' && !(currentUser && (currentUser.id === user.id || currentUser.username === user.username)) ? 'Cannot change another admin role' : 'Change role'}
-                    >
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
-                    </select>
+                    {/* AGGRESSIVE CHECK: Only show dropdown for non-admin users OR current user */}
+                    {normalizedUser.role === 'admin' && !isCurrentUser(normalizedUser) ? (
+                      <span className="role-badge role-badge-admin">👑 Admin</span>
+                    ) : normalizedUser.role === 'admin' && isCurrentUser(normalizedUser) ? (
+                      <select
+                        value={normalizedUser.role || 'user'}
+                        onChange={(e) => onChangeRole(userId, e.target.value)}
+                        className={`role-select role-${normalizedUser.role}`}
+                        title="Change role"
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    ) : normalizedUser.role === 'user' || !normalizedUser.role ? (
+                      <select
+                        value={normalizedUser.role || 'user'}
+                        onChange={(e) => onChangeRole(userId, e.target.value)}
+                        className={`role-select role-${normalizedUser.role}`}
+                        title="Change role"
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    ) : null}
                   </td>
                   <td className={`date-cell ${metrics.lastActivity ? 'active' : ''}`}>
                     <div className="date-cell-inner">
@@ -246,41 +275,42 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
                   </td>
                   <td className="actions-cell">
                     <div className="actions-cell-inner">
-                      {user.role !== 'admin' || (currentUser && (String(user.id) === String(currentUser.id) || user.username === currentUser.username)) ? (
-                        <button
-                          className="btn-action btn-edit"
-                          onClick={() => onEdit(user)}
-                          title="Edit user"
-                        >
-                          ✏️
-                        </button>
-                      ) : null}
-                      <button
-                        className="btn-action btn-reset"
-                        onClick={() => {
-                          if (window.confirm(`Reset password for "${user.username}"?`)) {
-                            alert('✅ Password reset link would be sent via email (demo)');
-                          }
-                        }}
-                        disabled={user.role === 'admin'}
-                        title={user.role === 'admin' ? 'Cannot reset admin password' : 'Reset password'}
-                        style={user.role === 'admin' ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                      >
-                        🔑
-                      </button>
-                      <button
-                        className="btn-action btn-delete"
-                        onClick={() => {
-                          if (window.confirm(`Are you sure you want to delete user "${user.username}"?`)) {
-                            onDelete(userId);
-                          }
-                        }}
-                        disabled={user.role === 'admin'}
-                        title={user.role === 'admin' ? 'Cannot delete admin accounts' : 'Delete user'}
-                        style={user.role === 'admin' ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                      >
-                        🗑️
-                      </button>
+                      {/* AGGRESSIVE CHECK: NEVER show buttons for other admins */}
+                      {normalizedUser.role === 'admin' && !isCurrentUser(normalizedUser) ? (
+                        <span className="action-blocked">🔒 Protected</span>
+                      ) : (
+                        <>
+                          <button
+                            className="btn-action btn-edit"
+                            onClick={() => onEdit(normalizedUser)}
+                            title="Edit user"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            className="btn-action btn-reset"
+                            onClick={() => {
+                              if (window.confirm(`Reset password for "${normalizedUser.username}"?`)) {
+                                alert('✅ Password reset link would be sent via email (demo)');
+                              }
+                            }}
+                            title="Reset password"
+                          >
+                            🔑
+                          </button>
+                          <button
+                            className="btn-action btn-delete"
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to delete user "${normalizedUser.username}"?`)) {
+                                onDelete(userId);
+                              }
+                            }}
+                            title="Delete user"
+                          >
+                            🗑️
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
