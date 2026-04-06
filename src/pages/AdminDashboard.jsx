@@ -4,54 +4,46 @@ import AdminSidebar from '../components/AdminSidebar';
 import AdminUserList from '../components/AdminUserList';
 import AddUserModal from '../components/AddUserModal';
 import EditUserModal from '../components/EditUserModal';
-import UserActivityLog from '../components/UserActivityLog';
 import SystemOverview from '../components/SystemOverview';
 import CriticalPlantsAlert from '../components/CriticalPlantsAlert';
 import PlantHealthAlerts from '../components/PlantHealthAlerts';
-import ReportingDashboard from '../components/ReportingDashboard';
-import AuditLog from '../components/AuditLog';
 import { useUserManagement } from '../hooks/useUserManagement';
 import '../styles/AdminDashboard.css';
 
 const AdminDashboard = ({ onNotification }) => {
-  const { users, loading, addUser, updateUser, deleteUser, changeUserRole, getActivityLog } = useUserManagement();
+  const { users, loading, error, addUser, updateUser, deleteUser, resetPassword, refetchUsers } = useUserManagement();
   const navigate = useNavigate();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [plants, setPlants] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const activityLog = getActivityLog();
+  const [plants, setPlants] = useState([]);
+  const [activityLog, setActivityLog] = useState([]);
 
   useEffect(() => {
-    // Load plants from localStorage
-    const savedPlants = JSON.parse(localStorage.getItem('plants')) || [];
-    setPlants(savedPlants);
-    
     // Load current user from localStorage
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user) {
       setCurrentUser(user);
     }
-
-    // Listen for storage changes (e.g., role changes)
-    const handleStorageChange = () => {
-      const updatedUser = JSON.parse(localStorage.getItem('currentUser'));
-      if (updatedUser) {
-        setCurrentUser(updatedUser);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    
+    // Load plants and activity log from localStorage
+    setPlants(JSON.parse(localStorage.getItem('plants')) || []);
+    setActivityLog(JSON.parse(localStorage.getItem('userActivityLog')) || []);
   }, []);
 
-  const handleAddUser = (userData) => {
+  const handleAddUser = async (userData) => {
     try {
-      addUser(userData);
-      setIsAddModalOpen(false);
-      if (onNotification) {
-        onNotification(`✅ User "${userData.username}" created successfully!`, 'success');
+      const result = await addUser(userData);
+      if (result.success) {
+        setIsAddModalOpen(false);
+        if (onNotification) {
+          onNotification(`✅ User "${userData.username}" created successfully!`, 'success');
+        }
+      } else {
+        if (onNotification) {
+          onNotification(`❌ Error creating user: ${result.error}`, 'error');
+        }
       }
     } catch (error) {
       if (onNotification) {
@@ -64,7 +56,7 @@ const AdminDashboard = ({ onNotification }) => {
     const isSelf = currentUser && (String(user.id) === String(currentUser.id) || user.username === currentUser.username);
     
     // Prevent editing other admins
-    if (user.role === 'admin' && !isSelf) {
+    if (user.is_staff && !isSelf) {
       if (onNotification) onNotification('❌ Cannot edit other admin accounts', 'error');
       return;
     }
@@ -73,8 +65,8 @@ const AdminDashboard = ({ onNotification }) => {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdateUser = (userId, userData) => {
-    const targetUser = users.find(u => u.id === userId || u.username === userId);
+  const handleUpdateUser = async (userId, userData) => {
+    const targetUser = users.find(u => u.id === userId);
     if (!targetUser) {
       if (onNotification) onNotification('❌ User not found', 'error');
       return;
@@ -82,18 +74,24 @@ const AdminDashboard = ({ onNotification }) => {
 
     const isSelf = currentUser && (String(targetUser.id) === String(currentUser.id) || targetUser.username === currentUser.username);
     
-    // Prevent updating other admins (strict check)
-    if (targetUser.role === 'admin' && !isSelf) {
+    // Prevent updating other admins
+    if (targetUser.is_staff && !isSelf) {
       if (onNotification) onNotification('❌ Cannot update other admin accounts', 'error');
       return;
     }
     
     try {
-      updateUser(userId, userData);
-      setIsEditModalOpen(false);
-      setSelectedUser(null);
-      if (onNotification) {
-        onNotification(`✅ User "${userData.username}" updated successfully!`, 'success');
+      const result = await updateUser(userId, userData);
+      if (result.success) {
+        setIsEditModalOpen(false);
+        setSelectedUser(null);
+        if (onNotification) {
+          onNotification(`✅ User updated successfully!`, 'success');
+        }
+      } else {
+        if (onNotification) {
+          onNotification(`❌ Error updating user: ${result.error}`, 'error');
+        }
       }
     } catch (error) {
       if (onNotification) {
@@ -102,66 +100,53 @@ const AdminDashboard = ({ onNotification }) => {
     }
   };
 
-  const handleDeleteUser = (userId) => {
-    const userToDelete = users.find(u => u.id === userId || u.username === userId);
+  const handleDeleteUser = async (userId) => {
+    const userToDelete = users.find(u => u.id === userId);
     
-    // Prevent deleting other admins (or self delete as well for safety)
-    if (userToDelete.role === 'admin') {
+    // Prevent deleting admin accounts
+    if (userToDelete?.is_staff) {
       if (onNotification) onNotification('❌ Cannot delete admin accounts', 'error');
       return;
     }
     
-    try {
-      deleteUser(userId);
-      if (onNotification) {
-        onNotification(`🗑️ User "${userToDelete?.username}" deleted successfully!`, 'success');
-      }
-    } catch (error) {
-      if (onNotification) {
-        onNotification(`❌ Error deleting user: ${error.message}`, 'error');
+    if (window.confirm(`Are you sure you want to delete user "${userToDelete?.username}"? This action cannot be undone.`)) {
+      try {
+        const result = await deleteUser(userId);
+        if (result.success) {
+          if (onNotification) {
+            onNotification(`🗑️ User "${userToDelete?.username}" deleted successfully!`, 'success');
+          }
+        } else {
+          if (onNotification) {
+            onNotification(`❌ Error deleting user: ${result.error}`, 'error');
+          }
+        }
+      } catch (error) {
+        if (onNotification) {
+          onNotification(`❌ Error deleting user: ${error.message}`, 'error');
+        }
       }
     }
   };
 
-  const handleChangeRole = (userId, newRole) => {
-    const targetUser = users.find(u => u.id === userId || u.username === userId);
-    if (!targetUser) {
-      if (onNotification) onNotification('❌ User not found', 'error');
-      return;
-    }
-
-    const isCurrent = currentUser && (targetUser.id === currentUser.id || targetUser.username === currentUser.username);
-
-    // Prevent admins from changing roles of other admins
-    if (targetUser.role === 'admin' && !isCurrent) {
-      if (onNotification) onNotification('❌ Cannot change role of another admin', 'error');
-      return;
-    }
-
-    // If admin self-demotes, apply role change then force sign-out immediately
-    if (isCurrent && targetUser.role === 'admin' && newRole === 'user') {
+  const handleResetPassword = async (userId) => {
+    const tempPassword = `TempPass${Math.floor(Math.random() * 100000)}!`;
+    if (window.confirm(`Reset password for this user? Temporary password: ${tempPassword}`)) {
       try {
-        changeUserRole(userId, newRole);
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('currentUser');
-        if (onNotification) onNotification('⚠️ You changed your role to User. Signing out for security.', 'info');
-        navigate('/login', { replace: true });
-        return;
+        const result = await resetPassword(userId, tempPassword);
+        if (result.success) {
+          if (onNotification) {
+            onNotification(`✅ Password reset! Temporary password: ${tempPassword}`, 'success');
+          }
+        } else {
+          if (onNotification) {
+            onNotification(`❌ Error resetting password: ${result.error}`, 'error');
+          }
+        }
       } catch (error) {
-        if (onNotification) onNotification(`❌ Error changing role: ${error.message}`, 'error');
-        return;
-      }
-    }
-
-    // Normal role update
-    try {
-      changeUserRole(userId, newRole);
-      if (onNotification) {
-        onNotification(`✅ User role changed to "${newRole}"!`, 'success');
-      }
-    } catch (error) {
-      if (onNotification) {
-        onNotification(`❌ Error changing role: ${error.message}`, 'error');
+        if (onNotification) {
+          onNotification(`❌ Error resetting password: ${error.message}`, 'error');
+        }
       }
     }
   };
@@ -173,13 +158,18 @@ const AdminDashboard = ({ onNotification }) => {
         <header className="admin-header">
           <div className="header-content">
             <h1>⚙️ Admin Dashboard</h1>
-            <p>Manage users, roles, and system activity</p>
+            <p>Manage users, plants, and system activity</p>
           </div>
         </header>
 
         {loading ? (
           <div className="loading-message">
             <p>Loading admin data...</p>
+          </div>
+        ) : error ? (
+          <div className="error-message">
+            <p>⚠️ {error}</p>
+            <button onClick={refetchUsers} className="btn-secondary">Retry</button>
           </div>
         ) : (
           <>
@@ -188,41 +178,15 @@ const AdminDashboard = ({ onNotification }) => {
               <SystemOverview users={users} activityLog={activityLog} />
             </section>
 
-            {/* Critical Plants Alert Section */}
-            <section className="admin-section">
-              <CriticalPlantsAlert 
-                plants={plants} 
-                users={users}
-                onWaterPlant={(plant) => {
-                  if (onNotification) {
-                    onNotification(`✅ Watered "${plant.name}"!`, 'success');
-                  }
-                  // Refresh plants
-                  const updatedPlants = JSON.parse(localStorage.getItem('plants')) || [];
-                  setPlants(updatedPlants);
-                }}
-                onSendReminder={() => {
-                  if (onNotification) {
-                    onNotification(`✅ Reminders sent to plant owners!`, 'success');
-                  }
-                }}
-              />
-            </section>
-
-            {/* Plant Health Alerts Section */}
-            <section className="admin-section">
-              <PlantHealthAlerts plants={plants} />
-            </section>
-
-            {/* Advanced Reporting Section */}
-            <section className="admin-section">
-              <ReportingDashboard />
-            </section>
-
-            {/* Audit Log Section */}
-            <section className="admin-section">
-              <AuditLog />
-            </section>
+            {/* Alerts Section */}
+            <div className="alerts-grid">
+              <section className="admin-section alert-section">
+                <CriticalPlantsAlert plants={plants} users={users} />
+              </section>
+              <section className="admin-section alert-section">
+                <PlantHealthAlerts plants={plants} />
+              </section>
+            </div>
 
             {/* User Management Section */}
             <section className="admin-section">
@@ -231,14 +195,9 @@ const AdminDashboard = ({ onNotification }) => {
                 currentUser={currentUser}
                 onEdit={handleEditUser}
                 onDelete={handleDeleteUser}
-                onChangeRole={handleChangeRole}
+                onResetPassword={handleResetPassword}
                 onAddUser={() => setIsAddModalOpen(true)}
               />
-            </section>
-
-            {/* Activity Log Section */}
-            <section className="admin-section">
-              <UserActivityLog activities={activityLog} />
             </section>
 
             {/* Modals */}

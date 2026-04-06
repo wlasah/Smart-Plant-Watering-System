@@ -2,11 +2,11 @@ import React from 'react';
 import { useSystemStats } from '../hooks/useSystemStats';
 import '../styles/SystemOverview.css';
 
-const SystemOverview = ({ users, activityLog }) => {
+const SystemOverview = ({ users = [], activityLog = [] }) => {
   const { totalUsers, totalPlants, healthyPlants, needsAttentionPlants, averageMoisture, loading } = useSystemStats();
 
-  const totalAdmins = users.filter(u => u.role === 'admin').length;
-  const totalRegularUsers = users.filter(u => u.role === 'user' || !u.role).length;
+  const totalAdmins = users.filter(u => u.is_staff || u.role === 'admin').length;
+  const totalRegularUsers = users.filter(u => !u.is_staff && u.role !== 'admin').length;
   const totalActions = activityLog.length;
 
   if (loading) {

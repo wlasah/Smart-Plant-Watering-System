@@ -195,8 +195,8 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
           </thead>
           <tbody>
             {users.map(user => {
-              // NORMALIZE: Ensure user has a role property (default to 'user')
-              const normalizedUser = { ...user, role: user.role || 'user' };
+              // NORMALIZE: Ensure user has a role property based on is_staff
+              const normalizedUser = { ...user, role: user.is_staff ? 'admin' : (user.role || 'user') };
               const userId = normalizedUser.id || normalizedUser.username;
               const metrics = userMetrics[userId] || {};
               const isSelected = selectedUsers.includes(userId);

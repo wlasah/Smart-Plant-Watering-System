@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { authAPI } from '../services/api';
 
 export function useRegister(onRegister, navigate) {
   const [username, setUsername] = useState('');
@@ -7,28 +8,59 @@ export function useRegister(onRegister, navigate) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const role = 'admin'; // All users are admins in this system
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    if (users.find(u => u.username === username)) {
-      setError('Username already exists');
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
       return;
     }
-    users.push({ username, email, password, role });
-    localStorage.setItem('users', JSON.stringify(users));
-    setSuccess(true);
+
     setError('');
-    if (onRegister) onRegister({ username, email, role });
-    if (navigate) {
-      setTimeout(() => {
-        navigate('/login');
-      }, 1200);
+    setLoading(true);
+
+    try {
+      console.log('[REGISTER] Starting registration...');
+      const response = await authAPI.register(username, email, password);
+      
+      // Extract user data from nested response
+      const userData = response.user || response;
+      
+      // Determine role based on is_staff
+      const role = userData.is_staff ? 'admin' : 'user';
+      
+      // Store token and user info
+      localStorage.setItem('auth_token', response.token);
+      localStorage.setItem('currentUser', JSON.stringify({ 
+        id: userData.id,
+        username: userData.username || username,
+        email: userData.email,
+        is_staff: userData.is_staff,
+        role
+      }));
+      localStorage.setItem('isLoggedIn', 'true');
+
+      setSuccess(true);
+      console.log('[REGISTER] Registration successful - Role:', role);
+      
+      if (onRegister) onRegister({ username, email, role });
+      if (navigate) {
+        setTimeout(() => {
+          navigate('/');
+        }, 1200);
+      }
+    } catch (err) {
+      console.error('[REGISTER] Error:', err);
+      setError(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -43,6 +75,7 @@ export function useRegister(onRegister, navigate) {
     setConfirmPassword,
     error,
     success,
-    handleSubmit
+    handleSubmit,
+    loading
   };
 }

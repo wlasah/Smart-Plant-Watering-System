@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/PlantHealthAlerts.css';
 
-const PlantHealthAlerts = ({ plants }) => {
+const PlantHealthAlerts = ({ plants = [] }) => {
   const [alerts, setAlerts] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [filterType, setFilterType] = useState('all');
 
   useEffect(() => {
     // Generate alerts from current plant data
-    const currentAlerts = plants
+    const currentAlerts = (plants || [])
       .filter(p => p.moistureLevel < 50)
       .map(p => ({
         id: p.id,

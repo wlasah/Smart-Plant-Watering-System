@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import StatsCard from './StatsCard';
 import '../styles/CriticalPlantsAlert.css';
 
-const CriticalPlantsAlert = ({ plants, users, onWaterPlant, onSendReminder }) => {
+const CriticalPlantsAlert = ({ plants = [], users = [], onWaterPlant, onSendReminder }) => {
   const [criticalPlants, setCriticalPlants] = useState([]);
   const [alertSettings, setAlertSettings] = useState({
     criticalThreshold: 30,
@@ -11,7 +11,7 @@ const CriticalPlantsAlert = ({ plants, users, onWaterPlant, onSendReminder }) =>
 
   useEffect(() => {
     // Get plants below critical threshold
-    const critical = plants
+    const critical = (plants || [])
       .filter(p => p.moistureLevel < alertSettings.criticalThreshold)
       .sort((a, b) => a.moistureLevel - b.moistureLevel)
       .slice(0, 10);

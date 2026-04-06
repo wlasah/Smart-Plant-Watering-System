@@ -11,6 +11,7 @@ import NotificationToast from './components/NotificationToast';
 // Pages
 import DashboardPage from './pages/DashboardPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 import PlantDetailPage from './pages/PlantDetailPage';
 import NotFound from './pages/NotFound';
@@ -78,6 +79,11 @@ function AppContent({ isLoggedIn, setIsLoggedIn, notification, setNotification, 
           <Route path="/analytics" element={
             <ProtectedRoute requireAdmin={true}>
               <AnalyticsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/reports" element={
+            <ProtectedRoute requireAdmin={true}>
+              <ReportsPage />
             </ProtectedRoute>
           } />
           <Route path="/settings" element={

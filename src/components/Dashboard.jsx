@@ -4,6 +4,7 @@ import StatsCard from './StatsCard';
 import AddPlantForm from './AddPlantForm';
 import '../styles/Dashboard.css';
 import { useDashboard } from '../hooks/useDashboard';
+import { plantsAPI } from '../services/api';
 
 const Dashboard = ({ 
   onNotification,
@@ -57,48 +58,68 @@ const Dashboard = ({
       .slice(0, 5);
   }, [plants]);
 
-  const handlePlantAdded = (newPlant) => {
-    const transformedPlant = {
-      ...newPlant,
-      moistureLevel: newPlant.moisture_level || newPlant.moistureLevel,
-      lastWatered: newPlant.last_watered || new Date().toISOString()
-    };
-    
-    const updatedPlants = [...plants, transformedPlant];
-    setPlants(updatedPlants);
-    localStorage.setItem('plants', JSON.stringify(updatedPlants));
-    
-    setIsFormOpen(false);
-    if (onNotification) {
-      onNotification(`🌱 ${newPlant.name} added successfully!`, 'success');
+  const handlePlantAdded = async (newPlant) => {
+    try {
+      // Refetch all plants from backend to ensure consistency
+      const data = await plantsAPI.getAllPlants();
+      const mappedPlants = data.map(plant => ({
+        id: plant.id,
+        name: plant.name,
+        type: plant.type,
+        location: plant.location,
+        moistureLevel: plant.moisture,
+        lastWatered: plant.last_watered,
+        description: plant.description,
+        careRequirements: {
+          waterFrequency: plant.care_requirements?.water_frequency,
+          lightRequirement: plant.care_requirements?.light_requirement,
+          temperature: plant.care_requirements?.temperature,
+          humidity: plant.care_requirements?.humidity,
+        },
+        watering_history: plant.watering_history,
+        created_at: plant.created_at,
+      }));
+      
+      setPlants(mappedPlants);
+      setIsFormOpen(false);
+      
+      if (onNotification) {
+        onNotification(`🌱 ${newPlant.name} added successfully!`, 'success');
+      }
+    } catch (err) {
+      console.error('Error adding plant:', err);
+      if (onNotification) {
+        onNotification(`❌ Failed to add plant: ${err.message}`, 'error');
+      }
     }
   };
 
-  const handleWaterPlant = (plantId) => {
+  const handleWaterPlant = async (plantId) => {
     const plant = plants.find(p => p.id === plantId);
     if (!plant) return;
 
-    const newMoisture = Math.min(plant.moistureLevel + 30, 100);
-    const updatedPlant = { ...plant, moistureLevel: newMoisture, lastWatered: new Date().toISOString() };
-    const updatedPlants = plants.map(p => p.id === plantId ? updatedPlant : p);
-    
-    setPlants(updatedPlants);
-    localStorage.setItem('plants', JSON.stringify(updatedPlants));
+    try {
+      const result = await plantsAPI.waterPlant(plantId, 'Watered from dashboard');
+      
+      // Update local state with new data
+      const updatedPlant = {
+        ...plant,
+        moistureLevel: result.plant.moisture,
+        lastWatered: result.plant.last_watered,
+      };
+      
+      setPlants(prevPlants =>
+        prevPlants.map(p => p.id === plantId ? updatedPlant : p)
+      );
 
-    // Log watering event
-    const wateringHistory = JSON.parse(localStorage.getItem('wateringHistory')) || [];
-    wateringHistory.push({
-      id: Date.now(),
-      plant_id: plantId,
-      watering_date: new Date().toISOString(),
-      moisture_before: plant.moistureLevel,
-      moisture_after: newMoisture,
-      name: plant.name
-    });
-    localStorage.setItem('wateringHistory', JSON.stringify(wateringHistory));
-
-    if (onNotification) {
-      onNotification(`💧 ${plant.name} watered! Moisture: ${newMoisture}%`, 'success');
+      if (onNotification) {
+        onNotification(`💧 ${plant.name} watered! Moisture: ${result.plant.moisture}%`, 'success');
+      }
+    } catch (err) {
+      console.error('Error watering plant:', err);
+      if (onNotification) {
+        onNotification(`❌ Failed to water plant: ${err.message}`, 'error');
+      }
     }
   };
 

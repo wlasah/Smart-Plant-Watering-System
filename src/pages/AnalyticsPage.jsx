@@ -6,6 +6,7 @@ import PlantHealthTrends from '../components/PlantHealthTrends';
 import WateringAnalytics from '../components/WateringAnalytics';
 import CommunicationCenter from '../components/CommunicationCenter';
 import BatchOperations from '../components/BatchOperations';
+import ReportingDashboard from '../components/ReportingDashboard';
 import '../styles/AnalyticsPage.css';
 
 const AnalyticsPage = () => {
@@ -386,6 +387,11 @@ const AnalyticsPage = () => {
           <BatchOperations users={users} plants={plants} />
         </div>
       )}
+
+      {/* Advanced Reporting & Analytics */}
+      <section style={{ marginTop: '3rem', borderTop: '2px solid #e0e0e0', paddingTop: '2rem' }}>
+        <ReportingDashboard users={users} />
+      </section>
       </div>
     </div>
   );

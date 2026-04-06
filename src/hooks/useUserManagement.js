@@ -1,129 +1,109 @@
 import { useState, useEffect } from 'react';
+import { adminAPI, authAPI } from '../services/api';
 
 export function useUserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Fetch all users on mount
   useEffect(() => {
-    const storedUsers = JSON.parse(localStorage.getItem('users')) || [];
-    setUsers(storedUsers);
-    setLoading(false);
+    fetchUsers();
   }, []);
 
-  const addUser = (newUser) => {
-    const userWithId = {
-      ...newUser,
-      id: Date.now(),
-      createdAt: new Date().toISOString(),
-    };
-    const updatedUsers = [...users, userWithId];
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  const fetchUsers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setUsers([]);
+        setLoading(false);
+        return;
+      }
 
-    // Log activity
-    logUserActivity('create', `User "${newUser.username}" created`, 'create');
-
-    return userWithId;
-  };
-
-  const updateUser = (userId, updatedUserData) => {
-    const updatedUsers = users.map(u =>
-      (u.id === userId || u.username === userId) ? { ...u, ...updatedUserData } : u
-    );
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-    // Log activity
-    logUserActivity('update', `User "${updatedUserData.username || userId}" updated`, 'update');
-
-    return updatedUsers.find(u => u.id === userId || u.username === userId);
-  };
-
-  const deleteUser = (userId) => {
-    const userToDelete = users.find(u => u.id === userId || u.username === userId);
-    const updatedUsers = users.filter(u => u.id !== userId && u.username !== userId);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-    // Log activity
-    logUserActivity('delete', `User "${userToDelete?.username}" deleted`, 'delete');
-
-    return true;
-  };
-
-  const isAdminRole = (role) => String(role || '').trim().toLowerCase() === 'admin';
-
-  const changeUserRole = (userId, newRole) => {
-    const currentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
-    const targetUser = users.find(u => u.id === userId || u.username === userId);
-
-    if (!targetUser) {
-      throw new Error('User not found');
+      const data = await adminAPI.getAllUsers();
+      setUsers(data);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setError(err.message || 'Failed to load users');
+      setUsers([]);
+    } finally {
+      setLoading(false);
     }
-
-    const isCurrent = currentUser && (currentUser.id === targetUser.id || currentUser.username === targetUser.username);
-
-    // Prevent other admins from being demoted by non-self
-    if (isAdminRole(targetUser.role) && !isCurrent) {
-      throw new Error('Cannot change role of another admin');
-    }
-
-    const updatedUsers = users.map(u =>
-      (u.id === userId || u.username === userId) ? { ...u, role: newRole } : u
-    );
-
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-    // If current user self-demotes from admin to user, sign out
-    if (isCurrent && targetUser.role === 'admin' && newRole === 'user') {
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('currentUser');
-    } else if (isCurrent) {
-      localStorage.setItem('currentUser', JSON.stringify({ ...currentUser, role: newRole }));
-    }
-
-    const user = updatedUsers.find(u => u.id === userId || u.username === userId);
-
-    // Log activity
-    logUserActivity('update', `User "${user?.username}" role changed to "${newRole}"`, 'role_change');
-
-    return user;
   };
 
-  const logUserActivity = (type, description, action) => {
-    const activityLog = JSON.parse(localStorage.getItem('userActivityLog')) || [];
-    const currentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
-
-    activityLog.push({
-      id: Date.now(),
-      timestamp: new Date().toISOString(),
-      type,
-      action,
-      description,
-      performedBy: currentUser?.username || 'system'
-    });
-
-    // Keep only last 500 entries
-    if (activityLog.length > 500) {
-      activityLog.shift();
+  const updateUser = async (userId, updatedUserData) => {
+    try {
+      const result = await adminAPI.updateUser(userId, updatedUserData);
+      
+      // Update local state
+      setUsers(prevUsers =>
+        prevUsers.map(u => u.id === userId ? { ...u, ...result } : u)
+      );
+      
+      console.log(`[ADMIN] User ${userId} updated successfully`);
+      return { success: true, user: result };
+    } catch (err) {
+      console.error('Error updating user:', err);
+      return { success: false, error: err.message || 'Failed to update user' };
     }
-
-    localStorage.setItem('userActivityLog', JSON.stringify(activityLog));
   };
 
-  const getActivityLog = () => {
-    return JSON.parse(localStorage.getItem('userActivityLog')) || [];
+  const deleteUser = async (userId) => {
+    try {
+      await adminAPI.deleteUser(userId);
+      
+      // Remove from local state
+      setUsers(prevUsers => prevUsers.filter(u => u.id !== userId));
+      
+      console.log(`[ADMIN] User ${userId} deleted successfully`);
+      return { success: true };
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      return { success: false, error: err.message || 'Failed to delete user' };
+    }
+  };
+
+  const resetPassword = async (userId, newPassword) => {
+    try {
+      const result = await adminAPI.resetPassword(userId, newPassword);
+      console.log(`[ADMIN] Password reset for user ${userId}`);
+      return { success: true, message: result.message };
+    } catch (err) {
+      console.error('Error resetting password:', err);
+      return { success: false, error: err.message || 'Failed to reset password' };
+    }
+  };
+
+  const addUser = async (newUserData) => {
+    try {
+      // Register the new user
+      const result = await authAPI.register(
+        newUserData.username,
+        newUserData.email,
+        newUserData.password
+      );
+
+      // Add to users list (refetch to ensure consistency)
+      await fetchUsers();
+      
+      console.log(`[ADMIN] User ${newUserData.username} created successfully`);
+      return { success: true, user: result };
+    } catch (err) {
+      console.error('Error adding user:', err);
+      return { success: false, error: err.message || 'Failed to create user' };
+    }
   };
 
   return {
     users,
     loading,
+    error,
     addUser,
     updateUser,
     deleteUser,
-    changeUserRole,
-    getActivityLog,
-    logUserActivity
+    resetPassword,
+    refetchUsers: fetchUsers,
   };
 }

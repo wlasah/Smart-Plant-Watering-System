@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { plantsAPI } from '../services/api';
 
 export function useDashboard(propPlants) {
   const [plants, setPlants] = useState(propPlants || []);
@@ -9,29 +10,60 @@ export function useDashboard(propPlants) {
   const [editingPlant, setEditingPlant] = useState(null);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
-  // Only load plants on mount, not on every render
+  // Fetch plants from backend on mount
   useEffect(() => {
-    setLoading(true);
-    try {
-      const storedPlants = localStorage.getItem('plants');
-      if (storedPlants) {
-        const parsedPlants = JSON.parse(storedPlants);
-        setPlants(parsedPlants);
-        setFilteredPlants(parsedPlants);
-      } else if (propPlants && propPlants.length > 0) {
-        setPlants(propPlants);
-        setFilteredPlants(propPlants);
-      } else {
+    const fetchPlants = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          setPlants([]);
+          setFilteredPlants([]);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+
+        const data = await plantsAPI.getAllPlants();
+        
+        // Map backend data to app format
+        const mappedPlants = data.map(plant => ({
+          id: plant.id,
+          name: plant.name,
+          type: plant.type,
+          location: plant.location,
+          moistureLevel: plant.moisture,
+          lastWatered: plant.last_watered,
+          description: plant.description,
+          careRequirements: {
+            waterFrequency: plant.care_requirements?.water_frequency,
+            lightRequirement: plant.care_requirements?.light_requirement,
+            temperature: plant.care_requirements?.temperature,
+            humidity: plant.care_requirements?.humidity,
+          },
+          watering_history: plant.watering_history,
+          created_at: plant.created_at,
+        }));
+
+        setPlants(mappedPlants);
+        setFilteredPlants(mappedPlants);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching plants:', err);
+        setError(err.message || 'Failed to load plants');
         setPlants([]);
         setFilteredPlants([]);
+      } finally {
+        setLoading(false);
       }
-      setError(null);
-    } catch (err) {
-      setError('Failed to load plants data');
-      console.error('Error loading plants:', err);
-    }
-    setLoading(false);
-  }, [propPlants]); // Run when propPlants changes
+    };
+
+    fetchPlants();
+    
+    // Set up auto-refresh every 30 seconds
+    const interval = setInterval(fetchPlants, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return {
     plants,
