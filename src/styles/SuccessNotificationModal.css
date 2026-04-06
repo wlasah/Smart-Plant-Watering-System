@@ -1,0 +1,196 @@
+/* Success Notification Modal Styles */
+
+.success-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.success-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 450px;
+  width: 90vw;
+  animation: slideIn 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.success-header {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+}
+
+.success-icon {
+  font-size: 2.5rem;
+  animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.success-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  flex: 1;
+  font-weight: 600;
+}
+
+.close-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.8rem;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.success-body {
+  padding: 25px;
+}
+
+.success-message {
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  color: #333;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.success-details {
+  background: #f0f7f4;
+  border-left: 4px solid #4CAF50;
+  padding: 15px;
+  border-radius: 6px;
+  margin-top: 15px;
+  font-size: 0.95rem;
+  color: #2d5016;
+  line-height: 1.6;
+}
+
+.success-details p {
+  margin: 0;
+}
+
+.success-details strong {
+  color: #1b3a0a;
+}
+
+.success-footer {
+  padding: 20px;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.auto-close-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #999;
+}
+
+.success-footer .btn-primary {
+  padding: 10px 20px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.success-footer .btn-primary:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.success-footer .btn-primary:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 600px) {
+  .success-modal {
+    width: 95vw;
+  }
+
+  .success-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .success-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .success-footer {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .auto-close-text {
+    order: 2;
+  }
+
+  .success-footer .btn-primary {
+    order: 1;
+    width: 100%;
+  }
+}

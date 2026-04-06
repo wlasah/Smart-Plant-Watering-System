@@ -67,11 +67,18 @@ export function useUserManagement() {
 
   const resetPassword = async (userId, newPassword) => {
     try {
+      console.log(`[useUserManagement] Calling resetPassword API for user ${userId}`);
       const result = await adminAPI.resetPassword(userId, newPassword);
+      console.log(`[useUserManagement] resetPassword API response:`, result);
       console.log(`[ADMIN] Password reset for user ${userId}`);
       return { success: true, message: result.message };
     } catch (err) {
-      console.error('Error resetting password:', err);
+      console.error('[useUserManagement] Error resetting password:', err);
+      console.error('[useUserManagement] Error details:', {
+        message: err.message,
+        status: err.status,
+        data: err.data
+      });
       return { success: false, error: err.message || 'Failed to reset password' };
     }
   };
@@ -96,6 +103,28 @@ export function useUserManagement() {
     }
   };
 
+  const changeRole = async (userId, newRole) => {
+    try {
+      const result = await adminAPI.updateUser(userId, { role: newRole || 'user', is_staff: newRole === 'admin' });
+      
+      // Update local state
+      setUsers(prevUsers =>
+        prevUsers.map(u => u.id === userId ? { 
+          ...u, 
+          ...result,
+          role: newRole,
+          is_staff: newRole === 'admin'
+        } : u)
+      );
+      
+      console.log(`[ADMIN] User ${userId} role changed to ${newRole}`);
+      return { success: true, user: result };
+    } catch (err) {
+      console.error('Error changing user role:', err);
+      return { success: false, error: err.message || 'Failed to change user role' };
+    }
+  };
+
   return {
     users,
     loading,
@@ -104,6 +133,7 @@ export function useUserManagement() {
     updateUser,
     deleteUser,
     resetPassword,
+    changeRole,
     refetchUsers: fetchUsers,
   };
 }

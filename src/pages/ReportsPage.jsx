@@ -9,15 +9,11 @@ const ReportsPage = () => {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    // Load current user from localStorage
+    // Load current user from localStorage (auth only)
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user) {
       setCurrentUser(user);
     }
-
-    // Load activity log from localStorage
-    const log = JSON.parse(localStorage.getItem('userActivityLog')) || [];
-    setActivityLog(log);
   }, []);
 
   return (

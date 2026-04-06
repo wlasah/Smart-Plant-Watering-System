@@ -297,6 +297,12 @@ export const plantsAPI = {
       throw error;
     });
   },
+
+  /**
+   * Get all plants across all users (admin only) - for analytics and reporting
+   */
+  getAllPlantsAdmin: () =>
+    fetchWithToken('/plants/all_plants/'),
 };
 
 /**
@@ -313,6 +319,12 @@ export const historyAPI = {
    */
   getPlantHistory: (plantId) =>
     fetchWithToken(`/watering-history/by_plant/?plant_id=${plantId}`),
+
+  /**
+   * Get all watering history across all users (admin only) - for analytics and reporting
+   */
+  getAllHistoryAdmin: () =>
+    fetchWithToken('/watering-history/all_history/'),
 };
 
 /**
@@ -357,6 +369,12 @@ export const adminAPI = {
         new_password: newPassword,
       }),
     }),
+
+  /**
+   * Get system-wide admin statistics (all plants, all users)
+   */
+  getAdminStats: () =>
+    fetchWithToken('/plants/admin_stats/'),
 };
 
 export default {

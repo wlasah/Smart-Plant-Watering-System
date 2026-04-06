@@ -26,34 +26,44 @@ const WateringAnalytics = ({ wateringHistory, plants }) => {
   }, [wateringHistory, plants, timeRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getMostWateredPlant = () => {
+    if (wateringHistory.length === 0) return 'N/A';
+    if (!plants || plants.length === 0) return 'N/A';
+    
     const plantCounts = {};
     wateringHistory.forEach(event => {
-      plantCounts[event.plant_id] = (plantCounts[event.plant_id] || 0) + 1;
+      const plantId = event.plant || event.plant_id || event.plantId;
+      plantCounts[plantId] = (plantCounts[plantId] || 0) + 1;
     });
     
-    const mostWateredId = Object.keys(plantCounts).reduce((a, b) => 
-      plantCounts[a] > plantCounts[b] ? a : b, null
+    const keys = Object.keys(plantCounts);
+    if (keys.length === 0) return 'N/A';
+    
+    const mostWateredId = keys.reduce((a, b) => 
+      plantCounts[a] > plantCounts[b] ? a : b
     );
     
-    const plant = plants.find(p => p.id === mostWateredId);
+    const plant = plants.find(p => p.id === parseInt(mostWateredId));
     return plant ? plant.name : 'N/A';
   };
 
   const getLeastWateredPlant = () => {
+    if (plants.length === 0) return 'N/A';
+    if (wateringHistory.length === 0) return plants[0]?.name || 'N/A';
+    
     const plantCounts = {};
     plants.forEach(plant => {
       plantCounts[plant.id] = 0;
     });
     
     wateringHistory.forEach(event => {
-      plantCounts[event.plant_id] = (plantCounts[event.plant_id] || 0) + 1;
+      plantCounts[event.plant] = (plantCounts[event.plant] || 0) + 1;
     });
     
     const leastWateredId = Object.keys(plantCounts).reduce((a, b) => 
       plantCounts[a] < plantCounts[b] ? a : b, null
     );
     
-    const plant = plants.find(p => p.id === leastWateredId);
+    const plant = plants.find(p => p.id === parseInt(leastWateredId));
     return plant ? plant.name : 'N/A';
   };
 
@@ -79,7 +89,7 @@ const WateringAnalytics = ({ wateringHistory, plants }) => {
     const frequencyArray = new Array(dataPoints).fill(0);
     
     wateringHistory.forEach(event => {
-      const eventDate = new Date(event.watering_date);
+      const eventDate = new Date(event.watered_at);
       const daysAgo = Math.floor((now - eventDate) / (1000 * 60 * 60 * 24));
       
       if (daysAgo < daysBack) {
@@ -102,7 +112,7 @@ const WateringAnalytics = ({ wateringHistory, plants }) => {
     };
 
     wateringHistory.forEach(event => {
-      const hour = new Date(event.watering_date).getHours();
+      const hour = new Date(event.watered_at).getHours();
       if (hour >= 6 && hour < 12) patterns.morning++;
       else if (hour >= 12 && hour < 17) patterns.afternoon++;
       else if (hour >= 17 && hour < 21) patterns.evening++;
@@ -156,7 +166,7 @@ const WateringAnalytics = ({ wateringHistory, plants }) => {
           />
           <StatsCard 
             title="Plants Watered" 
-            value={new Set(wateringHistory.map(w => w.plant_id)).size}
+            value={new Set(wateringHistory.map(w => w.plant)).size}
             color="moisture"
             icon="🌱"
           />

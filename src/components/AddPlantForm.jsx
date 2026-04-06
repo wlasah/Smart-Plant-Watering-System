@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { plantsAPI } from '../services/api';
 import '../styles/AddPlantForm.css';
 
 const AddPlantForm = ({ onPlantAdded, isOpen, onClose }) => {
@@ -20,7 +21,7 @@ const AddPlantForm = ({ onPlantAdded, isOpen, onClose }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -34,27 +35,15 @@ const AddPlantForm = ({ onPlantAdded, isOpen, onClose }) => {
     }
 
     try {
-      // Add plant to localStorage
-      const savedPlants = localStorage.getItem('plants');
-      const plantsList = savedPlants ? JSON.parse(savedPlants) : [];
-      
-      // Get current user info
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-      
-      const newPlant = {
-        id: Date.now(),
+      // Create plant via API
+      const apiPayload = {
         name: formData.name,
         location: formData.location,
-        moistureLevel: formData.moisture_level,
-        status: formData.status,
-        owner: currentUser?.username || 'Unknown',
-        user_id: currentUser?.id,
-        lastWatered: new Date().toLocaleString(),
-        created_at: new Date().toLocaleString()
+        moisture: formData.moisture_level,
+        type: formData.status
       };
       
-      plantsList.push(newPlant);
-      localStorage.setItem('plants', JSON.stringify(plantsList));
+      const newPlant = await plantsAPI.createPlant(apiPayload);
       
       setSuccess(true);
       setFormData({

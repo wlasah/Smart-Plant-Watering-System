@@ -192,14 +192,14 @@ const BatchOperations = ({ users, plants }) => {
           <div className="selection-group">
             <h4>Users ({selectedUsers.length} selected)</h4>
             <div className="selection-list">
-              {users.map(user => (
-                <label key={user.id} className="selection-item">
+              {users && users.map(user => (
+                <label key={`user-select-${user.id || user.username}`} className="selection-item">
                   <input
                     type="checkbox"
                     checked={selectedUsers.includes(user.id)}
                     onChange={() => handleUserSelect(user.id)}
                   />
-                  <span>{user.username} ({user.role})</span>
+                  <span>{user.username} ({user.role || 'user'})</span>
                 </label>
               ))}
             </div>
@@ -208,14 +208,14 @@ const BatchOperations = ({ users, plants }) => {
           <div className="selection-group">
             <h4>Plants ({selectedPlants.length} selected)</h4>
             <div className="selection-list">
-              {plants.map(plant => (
-                <label key={plant.id} className="selection-item">
+              {plants && plants.map(plant => (
+                <label key={`plant-select-${plant.id || plant.name}`} className="selection-item">
                   <input
                     type="checkbox"
                     checked={selectedPlants.includes(plant.id)}
                     onChange={() => handlePlantSelect(plant.id)}
                   />
-                  <span>{plant.name} ({plant.location}) - {plant.moistureLevel}%</span>
+                  <span>{plant.name} ({plant.location}) - {plant.moistureLevel || 0}%</span>
                 </label>
               ))}
             </div>

@@ -161,7 +161,10 @@ const PlantHealthTrends = ({ plants }) => {
       <section className="analytics-section">
         <h3>Individual Plant Health</h3>
         <div className="plant-selection">
+          <label htmlFor="plant-select">Select Plant:</label>
           <select 
+            id="plant-select"
+            name="plant-select"
             value={selectedPlant || ''} 
             onChange={(e) => setSelectedPlant(e.target.value ? parseInt(e.target.value) : null)}
           >

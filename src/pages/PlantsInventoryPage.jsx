@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { plantsAPI } from '../services/api';
 import '../styles/PlantsInventoryPage.css';
 
 const PlantsInventoryPage = () => {
   const navigate = useNavigate();
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterLocation, setFilterLocation] = useState('All');
@@ -14,18 +16,33 @@ const PlantsInventoryPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Load plants from localStorage
+  // Load plants from Django backend API
   useEffect(() => {
-    try {
-      setLoading(true);
-      const savedPlants = localStorage.getItem('plants');
-      const plantsList = savedPlants ? JSON.parse(savedPlants) : [];
-      setPlants(plantsList);
-    } catch (err) {
-      console.error('Error loading plants:', err);
-    } finally {
-      setLoading(false);
-    }
+    const fetchPlants = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const allPlants = await plantsAPI.getAllPlants();
+        const mappedPlants = allPlants.map(plant => ({
+          id: plant.id,
+          name: plant.name,
+          type: plant.type,
+          location: plant.location,
+          moistureLevel: plant.moisture,
+          lastWatered: plant.last_watered,
+          owner: plant.owner_username || 'Unknown'
+        }));
+        setPlants(mappedPlants);
+      } catch (err) {
+        console.error('Error loading plants:', err);
+        setError('Failed to load plants. Make sure Django backend is running on http://localhost:8000');
+        setPlants([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlants();
   }, []);
 
   // Get unique locations for filter
@@ -38,12 +55,13 @@ const PlantsInventoryPage = () => {
     let result = plants.filter(plant => {
       const matchesSearch = 
         plant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        plant.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (plant.location && plant.location.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (plant.type && plant.type.toLowerCase().includes(searchTerm.toLowerCase())) ||
         plant.id.toString().includes(searchTerm);
       
       const dynamicStatus = plant.moistureLevel >= 50 ? 'Healthy' : 'Needs Attention';
       const matchesStatus = filterStatus === 'All' || dynamicStatus === filterStatus;
-      const matchesLocation = filterLocation === 'All' || plant.location === filterLocation;
+      const matchesLocation = filterLocation === 'All' || (plant.location && plant.location === filterLocation);
       
       return matchesSearch && matchesStatus && matchesLocation;
     });
@@ -52,9 +70,9 @@ const PlantsInventoryPage = () => {
     result.sort((a, b) => {
       switch(sortBy) {
         case 'name':
-          return a.name.localeCompare(b.name);
+          return (a.name || '').localeCompare(b.name || '');
         case 'location':
-          return a.location.localeCompare(b.location);
+          return (a.location || '').localeCompare(b.location || '');
         case 'moisture':
           return b.moistureLevel - a.moistureLevel;
         case 'lastWatered':
@@ -98,7 +116,16 @@ const PlantsInventoryPage = () => {
   };
 
   if (loading) {
-    return <div className="inventory-loading"><p>Loading plants...</p></div>;
+    return <div className="inventory-loading"><p>Loading plants from Django backend...</p></div>;
+  }
+
+  if (error) {
+    return (
+      <div className="inventory-error">
+        <p>⚠️ {error}</p>
+        <button onClick={() => window.location.reload()}>Retry</button>
+      </div>
+    );
   }
 
   return (

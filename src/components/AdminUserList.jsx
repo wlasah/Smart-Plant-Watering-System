@@ -1,45 +1,174 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/AdminUserList.css';
+import { plantsAPI } from '../services/api';
 
-const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onAddUser }) => {
+const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, onChangeRole, onAddUser }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [userMetrics, setUserMetrics] = useState({});
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [bulkAction, setBulkAction] = useState('');
+  const [loadingMetrics, setLoadingMetrics] = useState(false);
 
   useEffect(() => {
-    // Calculate user metrics (plants count, last activity)
-    const plants = JSON.parse(localStorage.getItem('plants')) || [];
-    const activityLog = JSON.parse(localStorage.getItem('userActivityLog')) || [];
-    
-    const metrics = {};
-    users.forEach(user => {
-      const userPlants = plants.filter(p => p.owner === user.username || p.user_id === user.id);
-      const userActivities = activityLog.filter(a => a.performedBy === user.username);
-      const lastActivity = userActivities.length > 0 
-        ? new Date(Math.max(...userActivities.map(a => new Date(a.timestamp))))
-        : null;
-
-      metrics[user.id || user.username] = {
-        plantCount: userPlants.length,
-        activityCount: userActivities.length,
-        lastActivity: lastActivity,
-        engagementScore: Math.min(100, Math.round((userActivities.length / 10) * 100))
-      };
-    });
-    setUserMetrics(metrics);
+    // Fetch metrics for all users
+    fetchUserMetrics();
   }, [users]);
 
+  const fetchUserMetrics = async () => {
+    try {
+      setLoadingMetrics(true);
+      // Fetch all plants to calculate per-user statistics
+      const allPlants = await plantsAPI.getAllPlants();
+      
+      const metrics = {};
+      users.forEach(user => {
+        // Get user's plants
+        const userPlants = allPlants.filter(plant => 
+          plant.owner_username === user.username || plant.owner_id === user.id
+        );
+        
+        // Calculate metrics
+        const plantCount = userPlants.length;
+        
+        // Activity = number of plants with recent moisture readings
+        const recentPlants = userPlants.filter(plant => {
+          const lastReading = plant.last_watered || plant.updated_at;
+          if (!lastReading) return false;
+          const lastDate = new Date(lastReading);
+          const daysAgo = Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+          return daysAgo < 7; // Activity = plants updated in last 7 days
+        });
+        
+        // Engagement score: percentage of plants in healthy condition
+        let engagementScore = 0;
+        if (plantCount > 0) {
+          const healthyPlants = userPlants.filter(plant => {
+            const moisture = plant.current_moisture_level || 0;
+            return moisture >= 50; // Healthy if >= 50%
+          }).length;
+          engagementScore = Math.round((healthyPlants / plantCount) * 100);
+        }
+        
+        // Last activity: most recent watering or update
+        let lastActivity = 'Never';
+        if (userPlants.length > 0) {
+          const latestPlant = userPlants.reduce((latest, plant) => {
+            const plantDate = new Date(plant.last_watered || plant.updated_at || 0);
+            const latestDate = new Date(latest.last_watered || latest.updated_at || 0);
+            return plantDate > latestDate ? plant : latest;
+          });
+          const activityDate = new Date(latestPlant.last_watered || latestPlant.updated_at);
+          lastActivity = activityDate;
+        }
+        
+        metrics[user.id || user.username] = {
+          plantCount,
+          activityCount: recentPlants.length,
+          engagementScore,
+          lastActivity
+        };
+      });
+      
+      setUserMetrics(metrics);
+    } catch (err) {
+      console.error('Error fetching user metrics:', err);
+      // Fallback to default metrics
+      const metrics = {};
+      users.forEach(user => {
+        metrics[user.id || user.username] = {
+          plantCount: 0,
+          activityCount: 0,
+          engagementScore: 0,
+          lastActivity: 'Never'
+        };
+      });
+      setUserMetrics(metrics);
+    } finally {
+      setLoadingMetrics(false);
+    }
+  };
+
+
   // Helper function to check if a user is the current user
-  // IMPORTANT: Frontend-only app - use ONLY username comparison, not ID
   const isCurrentUser = (user) => {
     if (!currentUser) return false;
-    // ONLY compare by username/email - IDs in frontend-only apps are unreliable
     const isCurrentByUsername = user.username === currentUser.username;
     const isCurrentByEmail = user.email === currentUser.email;
     const result = isCurrentByUsername || isCurrentByEmail;
     console.log(`[isCurrentUser] ${user.username}: username match=${isCurrentByUsername}, email match=${isCurrentByEmail}, currentUser=${currentUser?.username}, result=${result}`);
     return result;
+  };
+
+  // Helper function to check if a user is an admin
+  const isAdminUser = (user) => {
+    return user.is_staff || user.role === 'admin';
+  };
+
+  // Helper function to safely change user role with restrictions
+  const handleRoleChange = (user, newRole) => {
+    // Prevent demoting other admins
+    if (isAdminUser(user) && !isCurrentUser(user)) {
+      alert('❌ Cannot change role of another admin account');
+      return;
+    }
+
+    // Warn if current user is demoting themselves
+    if (isCurrentUser(user) && newRole === 'user') {
+      const confirmed = window.confirm(
+        '⚠️ You are about to demote yourself to regular user.\n\n' +
+        'You will lose admin access after this change.\n\n' +
+        'Are you sure?'
+      );
+      if (!confirmed) return;
+    }
+
+    onChangeRole(user.id || user.username, newRole);
+  };
+
+  // Helper function to safely delete a user with restrictions
+  const handleDeleteUser = (user) => {
+    // Prevent deleting other admins
+    if (isAdminUser(user) && !isCurrentUser(user)) {
+      alert('❌ Cannot delete another admin account');
+      return;
+    }
+
+    // Warn if current user is deleting themselves
+    if (isCurrentUser(user)) {
+      const confirmed = window.confirm(
+        '⚠️ WARNING: You are about to delete your own account!\n\n' +
+        'This action cannot be undone.\n\n' +
+        'Type your username "' + user.username + '" to confirm:'
+      );
+      if (!confirmed) return;
+      
+      // Ask for confirmation with username
+      const confirmUsername = window.prompt('Enter your username to confirm deletion:');
+      if (confirmUsername !== user.username) {
+        alert('❌ Username does not match. Deletion cancelled.');
+        return;
+      }
+    } else {
+      const confirmed = window.confirm(
+        `⚠️ Are you sure you want to delete user "${user.username}"?\n\n` +
+        'This action cannot be undone.'
+      );
+      if (!confirmed) return;
+    }
+
+    onDelete(user.id || user.username);
+  };
+
+  // Helper function to safely reset password with restrictions
+  const handleResetPassword = (user) => {
+    // Prevent resetting password for other admins
+    if (isAdminUser(user) && !isCurrentUser(user)) {
+      alert('❌ Cannot reset password for another admin account');
+      return;
+    }
+
+    // Call the prop function which will open the modal
+    onResetPassword(user.id || user.username);
   };
 
   const handleSelectUser = (userId) => {
@@ -60,45 +189,60 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
 
   const handleBulkAction = () => {
     if (!bulkAction) {
-      alert('Please select an action');
+      alert('❌ Please select an action');
       return;
     }
 
-    // guard bulk admin rules - prevent any ops on admin users (except current user)
+    // Get data for selected users
     const selectedUsersData = selectedUsers
       .map(uid => users.find(u => u.id === uid || u.username === uid))
       .filter(Boolean);
 
-    // Can only manage admin if it's the current user
-    const adminsInSelection = selectedUsersData.filter(u => u.role === 'admin' && u.username !== currentUser?.username);
-    const allAdmins = selectedUsersData.filter(u => u.role === 'admin');
+    // Prevent any operations on other admins (except current user)
+    const otherAdminsInSelection = selectedUsersData.filter(u => 
+      isAdminUser(u) && !isCurrentUser(u)
+    );
     
-    if (adminsInSelection.length > 0) {
-      alert('❌ Cannot perform actions on other admin accounts');
+    if (otherAdminsInSelection.length > 0) {
+      alert(`❌ Cannot perform bulk actions on other admin accounts.\n\nAdmins in selection: ${otherAdminsInSelection.map(u => u.username).join(', ')}`);
       return;
+    }
+
+    // For make_user action, prevent demoting admins
+    if (bulkAction === 'make_user') {
+      const adminsInSelection = selectedUsersData.filter(u => isAdminUser(u));
+      if (adminsInSelection.length > 0) {
+        const usernames = adminsInSelection.map(u => u.username).join(', ');
+        alert(`❌ Cannot demote admin account(s): ${usernames}`);
+        return;
+      }
     }
 
     switch (bulkAction) {
       case 'make_admin':
         selectedUsers.forEach(userId => {
+          const user = users.find(u => u.id === userId || u.username === userId);
           onChangeRole(userId, 'admin');
         });
         alert(`✅ Made ${selectedUsers.length} user(s) admin!`);
         break;
       case 'make_user':
-        if (allAdmins.length > 0) {
-          alert('❌ Cannot downgrade admin accounts in bulk');
-          return;
-        }
         selectedUsers.forEach(userId => {
           onChangeRole(userId, 'user');
         });
         alert(`✅ Changed ${selectedUsers.length} user(s) to regular user!`);
         break;
       case 'reset_password':
-        const defaultPassword = 'TempPass123!';
-        // In a real app, you'd send reset emails. For this demo, we note the change
-        alert(`✅ Password reset for ${selectedUsers.length} user(s) to: ${defaultPassword}\n(In production, reset emails would be sent)`);
+        const confirmed = window.confirm(
+          `Reset password for ${selectedUsers.length} user(s)?\n\n` +
+          'A temporary password will be generated for each user.\n\n' +
+          'Click OK to reset passwords individually.'
+        );
+        if (confirmed) {
+          selectedUsers.forEach(userId => {
+            onResetPassword(userId);
+          });
+        }
         break;
       default:
         break;
@@ -136,6 +280,14 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
               </button>
             </div>
           )}
+          <button 
+            className="btn-secondary" 
+            onClick={fetchUserMetrics}
+            disabled={loadingMetrics}
+            title="Refresh user metrics"
+          >
+            {loadingMetrics ? '⟳ Loading...' : '⟳ Refresh'}
+          </button>
           <button className="btn-primary" onClick={onAddUser}>+ Add New User</button>
         </div>
       </div>
@@ -148,9 +300,9 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
             className="bulk-action-select"
           >
             <option value="">Select action...</option>
-            <option value="make_admin">👑 Make Admin</option>
-            <option value="make_user">👤 Make Regular User</option>
-            <option value="reset_password">🔑 Reset Password</option>
+            <option value="make_admin">👑 Make Admin (Cannot apply to other admins)</option>
+            <option value="make_user">👤 Make Regular User (Cannot demote other admins)</option>
+            <option value="reset_password">🔑 Reset Password (Cannot reset for other admins)</option>
           </select>
           <button 
             className="btn-action-primary"
@@ -218,12 +370,12 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
                   </td>
                   <td className="email-cell">{normalizedUser.email || '-'}</td>
                   <td className="plants-cell">
-                    <span className="metric-value">
+                    <span className="metric-value plants">
                       🌱 {metrics.plantCount || 0}
                     </span>
                   </td>
                   <td className="activity-cell">
-                    <span className="metric-value">
+                    <span className="metric-value activity">
                       📊 {metrics.activityCount || 0}
                     </span>
                   </td>
@@ -247,30 +399,31 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
                     ) : normalizedUser.role === 'admin' && isCurrentUser(normalizedUser) ? (
                       <select
                         value={normalizedUser.role || 'user'}
-                        onChange={(e) => onChangeRole(userId, e.target.value)}
+                        onChange={(e) => handleRoleChange(normalizedUser, e.target.value)}
                         className={`role-select role-${normalizedUser.role}`}
-                        title="Change role"
+                        title="Change role (⚠️ Demoting yourself will remove admin access)"
                       >
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
+                        <option value="user">👤 User (Demote)</option>
+                        <option value="admin">👑 Admin (Keep)</option>
                       </select>
                     ) : normalizedUser.role === 'user' || !normalizedUser.role ? (
                       <select
                         value={normalizedUser.role || 'user'}
-                        onChange={(e) => onChangeRole(userId, e.target.value)}
+                        onChange={(e) => handleRoleChange(normalizedUser, e.target.value)}
                         className={`role-select role-${normalizedUser.role}`}
                         title="Change role"
                       >
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
+                        <option value="user">👤 User</option>
+                        <option value="admin">👑 Admin</option>
                       </select>
                     ) : null}
                   </td>
-                  <td className={`date-cell ${metrics.lastActivity ? 'active' : ''}`}>
+                  <td className="date-cell">
                     <div className="date-cell-inner">
-                      {metrics.lastActivity 
-                        ? metrics.lastActivity.toLocaleDateString() + ' ' + metrics.lastActivity.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                        : 'Never'}
+                      {metrics.lastActivity instanceof Date
+                        ? metrics.lastActivity.toLocaleDateString() + ' ' + 
+                          metrics.lastActivity.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : metrics.lastActivity}
                     </div>
                   </td>
                   <td className="actions-cell">
@@ -289,22 +442,14 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onChangeRole, onA
                           </button>
                           <button
                             className="btn-action btn-reset"
-                            onClick={() => {
-                              if (window.confirm(`Reset password for "${normalizedUser.username}"?`)) {
-                                alert('✅ Password reset link would be sent via email (demo)');
-                              }
-                            }}
+                            onClick={() => handleResetPassword(normalizedUser)}
                             title="Reset password"
                           >
                             🔑
                           </button>
                           <button
                             className="btn-action btn-delete"
-                            onClick={() => {
-                              if (window.confirm(`Are you sure you want to delete user "${normalizedUser.username}"?`)) {
-                                onDelete(userId);
-                              }
-                            }}
+                            onClick={() => handleDeleteUser(normalizedUser)}
                             title="Delete user"
                           >
                             🗑️

@@ -146,9 +146,9 @@ const CommunicationCenter = ({ users }) => {
               <option value="all">All Users</option>
               <option value="active">Active Users Only</option>
               <option value="inactive">Inactive Users Only</option>
-              {users.map(user => (
-                <option key={user.id} value={user.username}>
-                  {user.username} ({user.role})
+              {users && users.map(user => (
+                <option key={`user-${user.id || user.username}`} value={user.username || user.id}>
+                  {user.username} ({user.role || 'user'})
                 </option>
               ))}
             </select>

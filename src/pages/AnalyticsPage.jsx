@@ -7,6 +7,7 @@ import WateringAnalytics from '../components/WateringAnalytics';
 import CommunicationCenter from '../components/CommunicationCenter';
 import BatchOperations from '../components/BatchOperations';
 import ReportingDashboard from '../components/ReportingDashboard';
+import { adminAPI, plantsAPI, historyAPI } from '../services/api';
 import '../styles/AnalyticsPage.css';
 
 const AnalyticsPage = () => {
@@ -17,36 +18,90 @@ const AnalyticsPage = () => {
   const [timeRange, setTimeRange] = useState('week');
   const [activeTab, setActiveTab] = useState('overview');
   const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Load plants, watering history, users, and activity log from localStorage
+  // Load plants, watering history, users, and activity log from API
   useEffect(() => {
-    try {
-      // Load plants from localStorage
-      const savedPlants = localStorage.getItem('plants');
-      const plantsList = savedPlants ? JSON.parse(savedPlants) : [];
-      setPlants(plantsList);
-      
-      // Load watering history from localStorage
-      const savedHistory = localStorage.getItem('wateringHistory');
-      const historyList = savedHistory ? JSON.parse(savedHistory) : [];
-      setWateringHistory(historyList);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        console.log('[ANALYTICS] Starting data fetch...');
+        console.log('[ANALYTICS] Auth token:', localStorage.getItem('auth_token')?.substring(0, 10) + '...');
+        
+        // Load current user first
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        console.log('[ANALYTICS] Current user:', user);
+        setCurrentUser(user);
+        
+        const isAdmin = user && (user.is_staff || user.role === 'admin');
+        console.log('[ANALYTICS] Is admin:', isAdmin);
+        
+        // Fetch plants from API - use different endpoint if admin
+        console.log('[ANALYTICS] Fetching plants from API...');
+        let plantsData;
+        if (isAdmin) {
+          console.log('[ANALYTICS] Using admin endpoint to fetch all plants...');
+          plantsData = await plantsAPI.getAllPlantsAdmin();
+        } else {
+          console.log('[ANALYTICS] Using user endpoint to fetch own plants...');
+          plantsData = await plantsAPI.getAllPlants();
+        }
+        console.log('[ANALYTICS] Plants fetched:', plantsData.length, plantsData);
+        
+        const mappedPlants = plantsData.map(plant => ({
+          id: plant.id,
+          name: plant.name,
+          type: plant.type,
+          location: plant.location,
+          moistureLevel: plant.moisture,
+          lastWatered: plant.last_watered,
+          description: plant.description,
+        }));
+        setPlants(mappedPlants);
 
-      // Load users from localStorage
-      const savedUsers = localStorage.getItem('users');
-      const usersList = savedUsers ? JSON.parse(savedUsers) : [];
-      setUsers(usersList);
+        // Fetch watering history from API - use different endpoint if admin
+        console.log('[ANALYTICS] Fetching watering history...');
+        let historyData;
+        if (isAdmin) {
+          console.log('[ANALYTICS] Using admin endpoint to fetch all watering history...');
+          historyData = await historyAPI.getAllHistoryAdmin();
+        } else {
+          console.log('[ANALYTICS] Using user endpoint to fetch own watering history...');
+          historyData = await historyAPI.getHistory();
+        }
+        console.log('[ANALYTICS] Watering history fetched:', historyData.length, historyData);
+        
+        const mappedHistory = historyData.map(entry => ({
+          id: entry.id,
+          plant_id: entry.plant,
+          watering_date: entry.watering_date,
+          notes: entry.notes,
+        }));
+        setWateringHistory(mappedHistory);
 
-      // Load activity log from localStorage
-      const savedActivity = localStorage.getItem('userActivityLog');
-      const activityList = savedActivity ? JSON.parse(savedActivity) : [];
-      setActivityLog(activityList);
+        // Fetch users from API
+        console.log('[ANALYTICS] Fetching users...');
+        const usersData = await adminAPI.getAllUsers();
+        console.log('[ANALYTICS] Users fetched:', usersData.length, usersData);
+        setUsers(usersData);
 
-      // Load current user
-      const user = JSON.parse(localStorage.getItem('currentUser'));
-      setCurrentUser(user);
-    } catch (err) {
-      console.error('Error loading data:', err);
-    }
+        // Activity log - no API endpoint yet
+        setActivityLog([]);
+      } catch (err) {
+        console.error('[ANALYTICS] Error loading data from API:', err);
+        console.error('[ANALYTICS] Full error:', JSON.stringify(err, null, 2));
+        // Set empty defaults - no localStorage fallback
+        setPlants([]);
+        setWateringHistory([]);
+        setUsers([]);
+        setActivityLog([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   // Calculate overall statistics - DYNAMIC based on moisture level
@@ -246,9 +301,13 @@ const AnalyticsPage = () => {
 
               {/* Grid lines and data points */}
               {getTrendData().map((value, index) => {
-                const x = 80 + (index * (700 / (getTrendData().length - 1 || 1)));
-                const maxValue = Math.max(...getTrendData());
+                const trendArray = getTrendData();
+                const x = 80 + (index * (700 / (Math.max(trendArray.length - 1, 1))));
+                const maxValue = Math.max(...trendArray, 1); // Ensure at least 1 to avoid NaN
                 const y = 260 - (value / maxValue) * 230;
+                
+                // Skip rendering if y is invalid
+                if (!isFinite(y)) return null;
                 
                 return (
                   <g key={index}>
@@ -269,11 +328,15 @@ const AnalyticsPage = () => {
               {/* Connecting line */}
               {getTrendData().map((value, index) => {
                 if (index === 0) return null;
-                const x1 = 80 + ((index - 1) * (700 / (getTrendData().length - 1 || 1)));
-                const x2 = 80 + (index * (700 / (getTrendData().length - 1 || 1)));
-                const maxValue = Math.max(...getTrendData());
-                const y1 = 260 - (getTrendData()[index - 1] / maxValue) * 230;
+                const trendArray = getTrendData();
+                const x1 = 80 + ((index - 1) * (700 / (Math.max(trendArray.length - 1, 1))));
+                const x2 = 80 + (index * (700 / (Math.max(trendArray.length - 1, 1))));
+                const maxValue = Math.max(...trendArray, 1); // Ensure at least 1 to avoid NaN
+                const y1 = 260 - (trendArray[index - 1] / maxValue) * 230;
                 const y2 = 260 - (value / maxValue) * 230;
+                
+                // Skip rendering if coordinates are invalid
+                if (!isFinite(y1) || !isFinite(y2)) return null;
                 
                 return (
                   <line key={`line-${index}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#06b6d4" strokeWidth="2" />
@@ -282,7 +345,7 @@ const AnalyticsPage = () => {
 
               {/* Y-axis labels */}
               <text x="25" y="265" fontSize="11" fill="#666">0</text>
-              <text x="15" y="25" fontSize="11" fill="#666">{Math.max(...getTrendData())}</text>
+              <text x="15" y="25" fontSize="11" fill="#666">{isFinite(Math.max(...getTrendData())) ? Math.max(...getTrendData()) : 0}</text>
             </svg>
           </div>
           <p className="chart-label">Water Usage (ml) - {timeRange}</p>

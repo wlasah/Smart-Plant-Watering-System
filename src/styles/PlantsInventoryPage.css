@@ -452,6 +452,40 @@
   color: #666;
 }
 
+.inventory-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 40px 20px;
+}
+
+.inventory-error p {
+  font-size: 1.1rem;
+  color: #d32f2f;
+  margin-bottom: 20px;
+}
+
+.inventory-error button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  background-color: #0c7a8b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.inventory-error button:hover {
+  background-color: #084f5f;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .plants-inventory {

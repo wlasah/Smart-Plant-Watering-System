@@ -1,38 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/EnhancedSettings.css';
 
+const API_BASE_URL = 'http://localhost:8000/api';
+
 const EnhancedSettings = () => {
-  const [settings, setSettings] = useState({
-    criticalThreshold: 30,
-    warningThreshold: 50,
-    healthyThreshold: 70,
-    notificationFrequency: 'daily',
-    enableEmailNotifications: true,
-    enableSystemAlerts: true,
-    autoArchiveDeadPlants: false,
-    deadPlantThreshold: 10,
-    dataRetentionDays: 90
-  });
-
-  const [roles, setRoles] = useState({
-    admin: { viewAllPlants: true, managePlants: true, manageUsers: true, manageSettings: true },
-    user: { viewAllPlants: false, managePlants: true, manageUsers: false, manageSettings: false }
-  });
-
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [savedMessage, setSavedMessage] = useState('');
+  const [error, setError] = useState(null);
 
+  // Fetch settings from backend
   useEffect(() => {
-    // Load settings from localStorage
-    const savedSettings = localStorage.getItem('systemSettings');
-    if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
-    }
-
-    const savedRoles = localStorage.getItem('rolePermissions');
-    if (savedRoles) {
-      setRoles(JSON.parse(savedRoles));
-    }
+    fetchSettings();
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE_URL}/settings/`, {
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch settings');
+      const data = await response.json();
+      
+      // Handle array response (list endpoint)
+      const settingsData = Array.isArray(data) ? data[0] : data;
+      setSettings(settingsData || createDefaultSettings());
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching settings:', err);
+      setError('Failed to load settings. Using defaults.');
+      setSettings(createDefaultSettings());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createDefaultSettings = () => ({
+    critical_threshold: 30,
+    warning_threshold: 50,
+    healthy_threshold: 70,
+    notification_frequency: 'daily',
+    enable_email_notifications: true,
+    enable_system_alerts: true,
+    auto_archive_dead_plants: false,
+    dead_plant_threshold: 10,
+    data_retention_days: 90
+  });
 
   const handleSettingChange = (key, value) => {
     setSettings(prev => ({
@@ -41,66 +61,40 @@ const EnhancedSettings = () => {
     }));
   };
 
-  const handleRoleChange = (role, permission, value) => {
-    setRoles(prev => ({
-      ...prev,
-      [role]: {
-        ...prev[role],
-        [permission]: value
-      }
-    }));
+  const handleSaveSettings = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      const token = localStorage.getItem('auth_token');
+      
+      const response = await fetch(`${API_BASE_URL}/settings/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(settings)
+      });
+
+      if (!response.ok) throw new Error('Failed to save settings');
+      
+      setSavedMessage('✅ Settings saved successfully!');
+      setTimeout(() => setSavedMessage(''), 3000);
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      setError('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleSaveSettings = () => {
-    localStorage.setItem('systemSettings', JSON.stringify(settings));
-    localStorage.setItem('rolePermissions', JSON.stringify(roles));
-    
-    // Log activity
-    const activityLog = JSON.parse(localStorage.getItem('userActivityLog')) || [];
-    activityLog.push({
-      id: Date.now(),
-      timestamp: new Date().toISOString(),
-      action: 'update_settings',
-      performedBy: 'admin',
-      description: 'System settings updated'
-    });
-    localStorage.setItem('userActivityLog', JSON.stringify(activityLog));
+  if (loading) {
+    return <div className="settings-loading">Loading settings...</div>;
+  }
 
-    setSavedMessage('✅ Settings saved successfully!');
-    setTimeout(() => setSavedMessage(''), 3000);
-  };
-
-  const handleExportData = () => {
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    const plants = JSON.parse(localStorage.getItem('plants')) || [];
-    const wateringHistory = JSON.parse(localStorage.getItem('wateringHistory')) || [];
-
-    const csvContent = [
-      ['USERS'],
-      ['ID', 'Username', 'Email', 'Role', 'Created At'],
-      ...users.map(u => [u.id, u.username, u.email || '', u.role, u.createdAt || '']),
-      [],
-      ['PLANTS'],
-      ['ID', 'Name', 'Owner', 'Type', 'Location', 'Moisture Level', 'Status', 'Last Watered'],
-      ...plants.map(p => [p.id, p.name, p.owner || '', p.type || '', p.location, p.moistureLevel, p.status, p.lastWatered || '']),
-      [],
-      ['WATERING HISTORY'],
-      ['Plant ID', 'Watering Date', 'Amount'],
-      ...wateringHistory.map(w => [w.plant_id, w.watering_date, w.amount || ''])
-    ]
-      .map(row => row.map(cell => `"${cell}"`).join(','))
-      .join('\n');
-
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
-    element.setAttribute('download', `plant-system-export-${new Date().toISOString().split('T')[0]}.csv`);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-
-    alert('✅ Data exported successfully!');
-  };
+  if (!settings) {
+    return <div className="settings-error">Unable to load settings</div>;
+  }
 
   return (
     <div className="enhanced-settings">
@@ -109,6 +103,7 @@ const EnhancedSettings = () => {
         <p>Configure thresholds, notifications, and system behavior</p>
       </header>
 
+      {error && <div className="error-message">{error}</div>}
       {savedMessage && <div className="success-message">{savedMessage}</div>}
 
       <div className="settings-container">
@@ -125,8 +120,8 @@ const EnhancedSettings = () => {
                   type="number" 
                   min="0" 
                   max="100" 
-                  value={settings.criticalThreshold}
-                  onChange={(e) => handleSettingChange('criticalThreshold', parseInt(e.target.value))}
+                  value={settings.critical_threshold}
+                  onChange={(e) => handleSettingChange('critical_threshold', parseInt(e.target.value))}
                 />
               </label>
               <small>Below this: Plant needs urgent watering</small>
@@ -139,8 +134,8 @@ const EnhancedSettings = () => {
                   type="number" 
                   min="0" 
                   max="100" 
-                  value={settings.warningThreshold}
-                  onChange={(e) => handleSettingChange('warningThreshold', parseInt(e.target.value))}
+                  value={settings.warning_threshold}
+                  onChange={(e) => handleSettingChange('warning_threshold', parseInt(e.target.value))}
                 />
               </label>
               <small>Between critical and warning: Plant needs attention soon</small>
@@ -153,8 +148,8 @@ const EnhancedSettings = () => {
                   type="number" 
                   min="0" 
                   max="100" 
-                  value={settings.healthyThreshold}
-                  onChange={(e) => handleSettingChange('healthyThreshold', parseInt(e.target.value))}
+                  value={settings.healthy_threshold}
+                  onChange={(e) => handleSettingChange('healthy_threshold', parseInt(e.target.value))}
                 />
               </label>
               <small>Above this: Plant is in good condition</small>
@@ -164,13 +159,13 @@ const EnhancedSettings = () => {
           <div className="threshold-visualization">
             <h4>Visual Reference</h4>
             <div className="threshold-bar">
-              <div className="threshold-section critical" style={{width: `${settings.criticalThreshold}%`}}>
+              <div className="threshold-section critical" style={{width: `${settings.critical_threshold}%`}}>
                 <span>🔴 Critical</span>
               </div>
-              <div className="threshold-section warning" style={{width: `${settings.warningThreshold - settings.criticalThreshold}%`}}>
+              <div className="threshold-section warning" style={{width: `${settings.warning_threshold - settings.critical_threshold}%`}}>
                 <span>🟡 Warning</span>
               </div>
-              <div className="threshold-section healthy" style={{width: `${100 - settings.healthyThreshold}%`}}>
+              <div className="threshold-section healthy" style={{width: `${100 - settings.healthy_threshold}%`}}>
                 <span>🟢 Healthy</span>
               </div>
             </div>
@@ -187,8 +182,8 @@ const EnhancedSettings = () => {
               <label>
                 <input 
                   type="checkbox" 
-                  checked={settings.enableSystemAlerts}
-                  onChange={(e) => handleSettingChange('enableSystemAlerts', e.target.checked)}
+                  checked={settings.enable_system_alerts}
+                  onChange={(e) => handleSettingChange('enable_system_alerts', e.target.checked)}
                 />
                 Enable System Alerts
               </label>
@@ -199,8 +194,8 @@ const EnhancedSettings = () => {
               <label>
                 <input 
                   type="checkbox" 
-                  checked={settings.enableEmailNotifications}
-                  onChange={(e) => handleSettingChange('enableEmailNotifications', e.target.checked)}
+                  checked={settings.enable_email_notifications}
+                  onChange={(e) => handleSettingChange('enable_email_notifications', e.target.checked)}
                 />
                 Enable Email Notifications
               </label>
@@ -211,11 +206,10 @@ const EnhancedSettings = () => {
               <label>
                 Notification Frequency
                 <select 
-                  value={settings.notificationFrequency}
-                  onChange={(e) => handleSettingChange('notificationFrequency', e.target.value)}
+                  value={settings.notification_frequency}
+                  onChange={(e) => handleSettingChange('notification_frequency', e.target.value)}
                 >
-                  <option value="immediate">Immediate</option>
-                  <option value="hourly">Hourly Summary</option>
+                  <option value="immediately">Immediately</option>
                   <option value="daily">Daily Summary</option>
                   <option value="weekly">Weekly Summary</option>
                 </select>
@@ -225,107 +219,71 @@ const EnhancedSettings = () => {
           </div>
         </section>
 
-        {/* Plant Management Settings */}
+        {/* Data Management Section */}
         <section className="settings-section">
-          <h3>🌱 Plant Management</h3>
-          <p className="section-desc">Automated plant management behaviors</p>
+          <h3>💾 Data Management</h3>
+          <p className="section-desc">Configure data retention and archiving</p>
 
           <div className="settings-grid">
             <div className="setting-item checkbox">
               <label>
                 <input 
                   type="checkbox" 
-                  checked={settings.autoArchiveDeadPlants}
-                  onChange={(e) => handleSettingChange('autoArchiveDeadPlants', e.target.checked)}
+                  checked={settings.auto_archive_dead_plants}
+                  onChange={(e) => handleSettingChange('auto_archive_dead_plants', e.target.checked)}
                 />
-                Auto-Archive Dead Plants
+                Auto-archive Dead Plants
               </label>
-              <small>Automatically archive plants below moisture threshold for extended period</small>
+              <small>Automatically archive plants that haven't been watered</small>
             </div>
 
             <div className="setting-item">
               <label>
-                Dead Plant Threshold (Days)
+                Dead Plant Threshold (days)
                 <input 
                   type="number" 
                   min="1" 
                   max="365" 
-                  value={settings.deadPlantThreshold}
-                  onChange={(e) => handleSettingChange('deadPlantThreshold', parseInt(e.target.value))}
+                  value={settings.dead_plant_threshold}
+                  onChange={(e) => handleSettingChange('dead_plant_threshold', parseInt(e.target.value))}
                 />
               </label>
-              <small>Plants below critical for this many days are marked as dead</small>
+              <small>Days without watering before marking as dead</small>
             </div>
 
             <div className="setting-item">
               <label>
-                Data Retention (Days)
+                Data Retention (days)
                 <input 
                   type="number" 
                   min="30" 
-                  max="1095" 
-                  value={settings.dataRetentionDays}
-                  onChange={(e) => handleSettingChange('dataRetentionDays', parseInt(e.target.value))}
+                  max="730" 
+                  value={settings.data_retention_days}
+                  onChange={(e) => handleSettingChange('data_retention_days', parseInt(e.target.value))}
                 />
               </label>
-              <small>How long to keep historical data before cleanup</small>
+              <small>How long to keep historical data</small>
             </div>
           </div>
         </section>
 
-        {/* Role & Permission Management */}
-        <section className="settings-section">
-          <h3>👑 Role & Permission Management</h3>
-          <p className="section-desc">Define what each role can do in the system</p>
-
-          <div className="permissions-table">
-            {Object.entries(roles).map(([role, permissions]) => (
-              <div key={role} className="role-permissions">
-                <h4>{role.charAt(0).toUpperCase() + role.slice(1).toUpperCase()}</h4>
-                <div className="permissions-grid">
-                  {Object.entries(permissions).map(([permission, allowed]) => (
-                    <div key={permission} className="permission-item">
-                      <label>
-                        <input 
-                          type="checkbox" 
-                          checked={allowed}
-                          onChange={(e) => handleRoleChange(role, permission, e.target.checked)}
-                        />
-                        {permission.split(/(?=[A-Z])/).join(' ')}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Data Export Section */}
-        <section className="settings-section">
-          <h3>📊 Data Export & Backup</h3>
-          <p className="section-desc">Export system data for analysis or backup</p>
-
-          <div className="export-actions">
-            <button 
-              className="btn-export"
-              onClick={handleExportData}
-            >
-              📥 Export All Data (CSV)
-            </button>
-            <small>Download all users, plants, and watering history as CSV file</small>
-          </div>
-        </section>
-
-        {/* Save Button */}
-        <div className="settings-footer">
+        {/* Action Buttons */}
+        <section className="settings-actions">
           <button 
-            className="btn-save-settings"
+            className="btn btn-save"
             onClick={handleSaveSettings}
+            disabled={saving}
           >
-            💾 Save All Settings
+            {saving ? 'Saving...' : '💾 Save Settings'}
           </button>
-        </div>
+          <button 
+            className="btn btn-reset"
+            onClick={fetchSettings}
+            disabled={loading}
+          >
+            ↻ Reset
+          </button>
+        </section>
       </div>
     </div>
   );

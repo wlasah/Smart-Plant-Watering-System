@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { adminAPI, plantsAPI } from '../services/api';
 
 export function useSystemStats() {
   const [stats, setStats] = useState({
@@ -7,58 +8,63 @@ export function useSystemStats() {
     healthyPlants: 0,
     needsAttentionPlants: 0,
     averageMoisture: 0,
-    loading: true
+    loading: true,
+    error: null
   });
 
   useEffect(() => {
-    const calculateStats = () => {
+    const fetchStats = async () => {
       try {
-        // Get users data
-        const users = JSON.parse(localStorage.getItem('users')) || [];
+        setStats(prev => ({ ...prev, loading: true, error: null }));
 
-        // Get plants data
-        const plants = JSON.parse(localStorage.getItem('plants')) || [];
+        console.log('[STATS] Starting fetch...');
+        console.log('[STATS] Auth token:', localStorage.getItem('auth_token')?.substring(0, 10) + '...');
 
-        const totalUsers = users.length;
-        const totalPlants = plants.length;
+        // Fetch users from API
+        console.log('[STATS] Fetching users...');
+        const usersData = await adminAPI.getAllUsers();
+        const totalUsers = usersData.length;
+        console.log('[STATS] Users fetched:', totalUsers, usersData);
 
-        // Calculate health statistics
-        const healthyPlants = plants.filter(plant => plant.moistureLevel >= 50).length;
-        const needsAttentionPlants = plants.filter(plant => plant.moistureLevel < 50).length;
-
-        // Calculate average moisture level
-        const averageMoisture = plants.length > 0
-          ? Math.round(plants.reduce((sum, plant) => sum + plant.moistureLevel, 0) / plants.length)
-          : 0;
-
+        // Fetch admin plant statistics (all plants across all users)
+        console.log('[STATS] Fetching admin stats...');
+        const plantStats = await adminAPI.getAdminStats();
+        console.log('[STATS] Admin stats fetched:', plantStats);
+        
         setStats({
           totalUsers,
-          totalPlants,
-          healthyPlants,
-          needsAttentionPlants,
-          averageMoisture,
-          loading: false
+          totalPlants: plantStats.total_plants || 0,
+          healthyPlants: plantStats.healthy || 0,
+          needsAttentionPlants: plantStats.needing_water || 0,
+          averageMoisture: Math.round(plantStats.average_moisture || 0),
+          loading: false,
+          error: null
         });
+        console.log('[STATS] Stats updated successfully');
       } catch (error) {
-        console.error('Error calculating system stats:', error);
-        setStats(prev => ({ ...prev, loading: false }));
+        console.error('[STATS] Error fetching system stats from API:', error);
+        console.error('[STATS] Full error object:', JSON.stringify(error, null, 2));
+        
+        // Fallback to empty state
+        setStats(prev => ({ 
+          ...prev, 
+          totalUsers: 0,
+          totalPlants: 0,
+          healthyPlants: 0,
+          needsAttentionPlants: 0,
+          averageMoisture: 0,
+          loading: false,
+          error: error.message || 'Failed to fetch stats'
+        }));
       }
     };
 
-    calculateStats();
+    fetchStats();
 
-    // Listen for storage changes to update stats in real-time
-    const handleStorageChange = (e) => {
-      if (e.key === 'users' || e.key === 'plants') {
-        calculateStats();
-      }
-    };
+    // Refresh stats every 30 seconds for real-time updates
+    const interval = setInterval(fetchStats, 30000);
 
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   return stats;

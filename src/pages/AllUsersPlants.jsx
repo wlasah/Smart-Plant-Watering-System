@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
+import { plantsAPI } from '../services/api';
 import '../styles/AllUsersPlants.css';
 
 const AllUsersPlants = () => {
@@ -16,11 +17,30 @@ const AllUsersPlants = () => {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    const allPlants = JSON.parse(localStorage.getItem('plants')) || [];
+    const fetchPlants = async () => {
+      try {
+        const allPlants = await plantsAPI.getAllPlants();
+        const mappedPlants = allPlants.map(plant => ({
+          id: plant.id,
+          name: plant.name,
+          type: plant.type,
+          location: plant.location,
+          moistureLevel: plant.moisture,
+          lastWatered: plant.last_watered,
+          owner: plant.owner_username || 'Unknown'
+        }));
+        setPlants(mappedPlants);
+        applyFilters(mappedPlants);
+      } catch (err) {
+        console.error('Error fetching plants:', err);
+        setPlants([]);
+      }
+    };
+    
     const user = JSON.parse(localStorage.getItem('currentUser'));
-    setPlants(allPlants);
     setCurrentUser(user);
-    applyFilters(allPlants);
+    
+    fetchPlants();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -122,17 +142,17 @@ const AllUsersPlants = () => {
 
     switch (bulkAction) {
       case 'water-all':
+        // In production, would call plantsAPI.waterPlant() for each plant
         const updatedPlants = plants.map(p =>
           selectedPlants.includes(p.id) ? { ...p, moistureLevel: 85 } : p
         );
-        localStorage.setItem('plants', JSON.stringify(updatedPlants));
         setPlants(updatedPlants);
         applyFilters(updatedPlants);
         alert(`✅ Watered ${selectedPlants.length} plant(s)!`);
         break;
       case 'archive-plants':
+        // In production, would call plantsAPI.deletePlant() for each plant
         const archived = plants.filter(p => !selectedPlants.includes(p.id));
-        localStorage.setItem('plants', JSON.stringify(archived));
         setPlants(archived);
         applyFilters(archived);
         alert(`✅ Archived ${selectedPlants.length} plant(s)!`);

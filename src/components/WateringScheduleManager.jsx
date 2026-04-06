@@ -1,37 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/WateringScheduleManager.css';
 
+const API_BASE_URL = 'http://localhost:8000/api';
+
 const WateringScheduleManager = () => {
   const [schedules, setSchedules] = useState([]);
-  const [plants, setPlants] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [plantTypes, setPlantTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
-    plantType: '',
-    frequency: 'every-2-days',
-    waterAmount: 50,
-    optimalTimeOfDay: '06:00',
-    assignedUsers: [],
+    plant_type: '',
+    frequency: 'weekly',
+    water_amount: 50,
+    optimal_time_of_day: '06:00',
     notes: ''
   });
 
   useEffect(() => {
-    // Load data from localStorage
-    const savedSchedules = localStorage.getItem('wateringSchedules');
-    if (savedSchedules) {
-      setSchedules(JSON.parse(savedSchedules));
-    }
-
-    const plantsData = JSON.parse(localStorage.getItem('plants')) || [];
-    setPlants(plantsData);
-
-    const usersData = JSON.parse(localStorage.getItem('users')) || [];
-    setUsers(usersData);
+    fetchSchedules();
+    fetchPlantTypes();
   }, []);
 
-  const plantTypes = ['Succulent', 'Fern', 'Tropical', 'Cactus', 'Vegetable', 'Herb', 'Flowering', 'Indoor', 'Outdoor'];
+  const fetchSchedules = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE_URL}/watering-schedules/`, {
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch schedules');
+      const data = await response.json();
+      setSchedules(Array.isArray(data) ? data : data.results || []);
+      setError('');
+    } catch (err) {
+      console.error('Error fetching schedules:', err);
+      setError('Failed to load schedules');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPlantTypes = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE_URL}/plant-types/`, {
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch plant types');
+      const data = await response.json();
+      setPlantTypes(Array.isArray(data) ? data : data.results || []);
+    } catch (err) {
+      console.error('Error fetching plant types:', err);
+    }
+  };
 
   const frequencyOptions = [
     { value: 'daily', label: 'Daily' },
@@ -50,49 +84,54 @@ const WateringScheduleManager = () => {
     }));
   };
 
-  const handleUserToggle = (userId) => {
-    setFormData(prev => ({
-      ...prev,
-      assignedUsers: prev.assignedUsers.includes(userId)
-        ? prev.assignedUsers.filter(id => id !== userId)
-        : [...prev.assignedUsers, userId]
-    }));
-  };
-
-  const handleAddSchedule = () => {
-    if (!formData.name || !formData.plantType) {
-      alert('Please fill in required fields');
+  const handleAddSchedule = async () => {
+    if (!formData.name || !formData.plant_type) {
+      setError('Please fill in required fields');
       return;
     }
 
-    if (editingId) {
-      setSchedules(prev =>
-        prev.map(s => s.id === editingId ? { ...formData, id: editingId } : s)
-      );
-      setEditingId(null);
-    } else {
-      const newSchedule = {
-        ...formData,
-        id: Date.now(),
-        createdAt: new Date().toISOString()
-      };
-      setSchedules(prev => [newSchedule, ...prev]);
-    }
+    try {
+      setSaving(true);
+      const token = localStorage.getItem('auth_token');
+      const method = editingId ? 'PATCH' : 'POST';
+      const url = editingId 
+        ? `${API_BASE_URL}/watering-schedules/${editingId}/`
+        : `${API_BASE_URL}/watering-schedules/`;
 
-    localStorage.setItem('wateringSchedules', JSON.stringify(schedules));
-    resetForm();
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) throw new Error('Failed to save schedule');
+      
+      setMessage(editingId ? '✅ Schedule updated!' : '✅ Schedule created!');
+      setTimeout(() => setMessage(''), 3000);
+      
+      fetchSchedules();
+      resetForm();
+    } catch (err) {
+      console.error('Error saving schedule:', err);
+      setError('Failed to save schedule');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const resetForm = () => {
     setFormData({
       name: '',
-      plantType: '',
-      frequency: 'every-2-days',
-      waterAmount: 50,
-      optimalTimeOfDay: '06:00',
-      assignedUsers: [],
+      plant_type: '',
+      frequency: 'weekly',
+      water_amount: 50,
+      optimal_time_of_day: '06:00',
       notes: ''
     });
+    setEditingId(null);
     setShowForm(false);
   };
 
@@ -102,42 +141,30 @@ const WateringScheduleManager = () => {
     setShowForm(true);
   };
 
-  const handleDeleteSchedule = (id) => {
-    if (window.confirm('Delete this schedule?')) {
-      setSchedules(prev => prev.filter(s => s.id !== id));
-      localStorage.setItem('wateringSchedules', JSON.stringify(schedules));
+  const handleDeleteSchedule = async (id) => {
+    if (!window.confirm('Delete this schedule?')) return;
+
+    try {
+      setSaving(true);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE_URL}/watering-schedules/${id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Token ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to delete schedule');
+      
+      setMessage('✅ Schedule deleted!');
+      setTimeout(() => setMessage(''), 3000);
+      fetchSchedules();
+    } catch (err) {
+      console.error('Error deleting schedule:', err);
+      setError('Failed to delete schedule');
+    } finally {
+      setSaving(false);
     }
-  };
-
-  const getComplianceMetrics = (schedule) => {
-    const affectedPlants = plants.filter(p => p.type === schedule.plantType && schedule.assignedUsers.includes(p.user_id || p.owner_id));
-    const totalPlants = affectedPlants.length;
-
-    if (totalPlants === 0) return null;
-
-    const wateringHistories = JSON.parse(localStorage.getItem('wateringHistory')) || [];
-    const scheduleWaterings = wateringHistories.filter(w =>
-      affectedPlants.some(p => p.id === w.plant_id)
-    );
-
-    const complianceRate = totalPlants > 0
-      ? Math.round((scheduleWaterings.length / totalPlants) * 100)
-      : 0;
-
-    return {
-      totalPlants,
-      waterings: scheduleWaterings.length,
-      complianceRate
-    };
-  };
-
-  const frequencyTooltips = {
-    'daily': 'Water every single day',
-    'every-2-days': 'Water on alternating days',
-    'every-3-days': 'Water every third day',
-    'weekly': 'Water once per week',
-    'bi-weekly': 'Water every two weeks',
-    'monthly': 'Water once per month'
   };
 
   return (
@@ -147,232 +174,185 @@ const WateringScheduleManager = () => {
         <p>Create and manage watering schedules for different plant types</p>
       </header>
 
-      {/* Add/Edit Schedule Form */}
-      {showForm && (
-        <div className="schedule-form-container">
-          <div className="schedule-form">
-            <h3>{editingId ? 'Edit Schedule' : 'Create New Schedule'}</h3>
+      {error && <div className="error-message">{error}</div>}
+      {message && <div className="success-message">{message}</div>}
 
-            <div className="form-grid">
-              <div className="form-group">
-                <label>Schedule Name *</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Summer Succulent Care"
-                />
-              </div>
+      {loading ? (
+        <div className="loading">Loading schedules...</div>
+      ) : (
+        <>
+          {/* Add/Edit Schedule Form */}
+          {showForm && (
+            <div className="schedule-form-container">
+              <div className="schedule-form">
+                <h3>{editingId ? 'Edit Schedule' : 'Create New Schedule'}</h3>
 
-              <div className="form-group">
-                <label>Plant Type *</label>
-                <select
-                  name="plantType"
-                  value={formData.plantType}
-                  onChange={handleInputChange}
-                >
-                  <option value="">Select Plant Type</option>
-                  {plantTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Schedule Name *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="e.g., Summer Succulent Care"
+                    />
+                  </div>
 
-              <div className="form-group">
-                <label>Watering Frequency *</label>
-                <select
-                  name="frequency"
-                  value={formData.frequency}
-                  onChange={handleInputChange}
-                  title={frequencyTooltips[formData.frequency]}
-                >
-                  {frequencyOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
+                  <div className="form-group">
+                    <label>Plant Type *</label>
+                    <select
+                      name="plant_type"
+                      value={formData.plant_type}
+                      onChange={handleInputChange}
+                    >
+                      <option value="">Select Plant Type</option>
+                      {plantTypes.map(type => (
+                        <option key={type.id} value={type.id}>{type.name}</option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div className="form-group">
-                <label>Water Amount (%) *</label>
-                <div className="water-amount-input">
-                  <input
-                    type="range"
-                    name="waterAmount"
-                    min="10"
-                    max="100"
-                    value={formData.waterAmount}
-                    onChange={handleInputChange}
-                  />
-                  <span className="water-value">{formData.waterAmount}%</span>
+                  <div className="form-group">
+                    <label>Watering Frequency *</label>
+                    <select
+                      name="frequency"
+                      value={formData.frequency}
+                      onChange={handleInputChange}
+                    >
+                      {frequencyOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Water Amount (%) *</label>
+                    <div className="water-amount-input">
+                      <input
+                        type="range"
+                        name="water_amount"
+                        min="10"
+                        max="100"
+                        value={formData.water_amount}
+                        onChange={handleInputChange}
+                      />
+                      <span className="water-value">{formData.water_amount}%</span>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Optimal Time of Day</label>
+                    <input
+                      type="time"
+                      name="optimal_time_of_day"
+                      value={formData.optimal_time_of_day}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Notes</label>
+                    <textarea
+                      name="notes"
+                      value={formData.notes}
+                      onChange={handleInputChange}
+                      placeholder="Special care instructions"
+                      rows="3"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-buttons">
+                  <button 
+                    className="btn-primary" 
+                    onClick={handleAddSchedule}
+                    disabled={saving}
+                  >
+                    {saving ? 'Saving...' : (editingId ? '✏️ Update Schedule' : '➕ Create Schedule')}
+                  </button>
+                  <button className="btn-secondary" onClick={resetForm}>
+                    Cancel
+                  </button>
                 </div>
               </div>
-
-              <div className="form-group">
-                <label>Optimal Time of Day</label>
-                <input
-                  type="time"
-                  name="optimalTimeOfDay"
-                  value={formData.optimalTimeOfDay}
-                  onChange={handleInputChange}
-                />
-              </div>
             </div>
+          )}
 
-            {/* User Assignment */}
-            <div className="users-assignment">
-              <label>Assign to Users (who maintain these plants)</label>
-              <div className="users-checklist">
-                {users.map(user => (
-                  <div key={user.id} className="user-checkbox">
-                    <input
-                      type="checkbox"
-                      id={`user-${user.id}`}
-                      checked={formData.assignedUsers.includes(user.id)}
-                      onChange={() => handleUserToggle(user.id)}
-                    />
-                    <label htmlFor={`user-${user.id}`}>
-                      {user.username}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className="form-group">
-              <label>Notes</label>
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                placeholder="Special care instructions, seasonal adjustments, etc."
-                rows="4"
-              />
-            </div>
-
-            {/* Form Buttons */}
-            <div className="form-buttons">
-              <button className="btn-primary" onClick={handleAddSchedule}>
-                {editingId ? '✏️ Update Schedule' : '➕ Create Schedule'}
+          {/* Schedules List */}
+          <div className="schedules-container">
+            {!showForm && (
+              <button className="btn-new-schedule" onClick={() => setShowForm(true)}>
+                ➕ Create New Schedule
               </button>
-              <button className="btn-secondary" onClick={resetForm}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            )}
 
-      {/* Schedules List */}
-      <div className="schedules-container">
-        {!showForm && (
-          <button className="btn-new-schedule" onClick={() => setShowForm(true)}>
-            ➕ Create New Schedule
-          </button>
-        )}
-
-        <div className="schedules-list">
-          {schedules.length === 0 ? (
-            <div className="no-schedules">
-              <p>📅 No schedules yet. Create one to get started!</p>
-            </div>
-          ) : (
-            schedules.map(schedule => {
-              const metrics = getComplianceMetrics(schedule);
-              return (
-                <div key={schedule.id} className="schedule-card">
-                  <div className="schedule-header-info">
-                    <h4>{schedule.name}</h4>
-                    <span className="plant-type-badge">{schedule.plantType}</span>
-                  </div>
-
-                  <div className="schedule-details-grid">
-                    <div className="detail-item">
-                      <span className="detail-label">Frequency</span>
-                      <span className="detail-value">
-                        {frequencyOptions.find(o => o.value === schedule.frequency)?.label}
-                      </span>
+            <div className="schedules-list">
+              {schedules.length === 0 ? (
+                <div className="no-schedules">
+                  <p>📅 No schedules yet. Create one to get started!</p>
+                </div>
+              ) : (
+                schedules.map(schedule => (
+                  <div key={schedule.id} className="schedule-card">
+                    <div className="schedule-header-info">
+                      <h4>{schedule.name}</h4>
+                      <span className="plant-type-badge">{schedule.plant_type_name}</span>
                     </div>
 
-                    <div className="detail-item">
-                      <span className="detail-label">Water Amount</span>
-                      <span className="detail-value">{schedule.waterAmount}%</span>
-                    </div>
+                    <div className="schedule-details-grid">
+                      <div className="detail-item">
+                        <span className="detail-label">Frequency</span>
+                        <span className="detail-value">
+                          {frequencyOptions.find(o => o.value === schedule.frequency)?.label}
+                        </span>
+                      </div>
 
-                    <div className="detail-item">
-                      <span className="detail-label">Optimal Time</span>
-                      <span className="detail-value">{schedule.optimalTimeOfDay}</span>
-                    </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Water Amount</span>
+                        <span className="detail-value">{schedule.water_amount}%</span>
+                      </div>
 
-                    <div className="detail-item">
-                      <span className="detail-label">Assigned Users</span>
-                      <span className="detail-value">
-                        {schedule.assignedUsers.length > 0
-                          ? schedule.assignedUsers.length + ' user(s)'
-                          : 'None'}
-                      </span>
-                    </div>
-                  </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Optimal Time</span>
+                        <span className="detail-value">{schedule.optimal_time_of_day}</span>
+                      </div>
 
-                  {/* Compliance Metrics */}
-                  {metrics && (
-                    <div className="compliance-section">
-                      <h5>Compliance Metrics</h5>
-                      <div className="metrics-grid">
-                        <div className="metric">
-                          <span className="metric-label">Plants Affected</span>
-                          <span className="metric-value">{metrics.totalPlants}</span>
-                        </div>
-                        <div className="metric">
-                          <span className="metric-label">Waterings Completed</span>
-                          <span className="metric-value">{metrics.waterings}</span>
-                        </div>
-                        <div className="metric">
-                          <span className="metric-label">Compliance Rate</span>
-                          <div className="compliance-bar">
-                            <div
-                              className="compliance-fill"
-                              style={{
-                                width: `${metrics.complianceRate}%`,
-                                background: metrics.complianceRate >= 80 ? '#27ae60' : metrics.complianceRate >= 50 ? '#f39c12' : '#e74c3c'
-                              }}
-                            />
-                          </div>
-                          <span className="compliance-percent">{metrics.complianceRate}%</span>
-                        </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Created By</span>
+                        <span className="detail-value">{schedule.created_by_username}</span>
                       </div>
                     </div>
-                  )}
 
-                  {schedule.notes && (
-                    <div className="schedule-notes">
-                      <strong>📝 Notes:</strong>
-                      <p>{schedule.notes}</p>
+                    {schedule.notes && (
+                      <div className="schedule-notes">
+                        <strong>📝 Notes:</strong>
+                        <p>{schedule.notes}</p>
+                      </div>
+                    )}
+
+                    <div className="schedule-actions">
+                      <button
+                        className="btn-edit"
+                        onClick={() => handleEditSchedule(schedule)}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleDeleteSchedule(schedule.id)}
+                        disabled={saving}
+                      >
+                        🗑️ Delete
+                      </button>
                     </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="schedule-actions">
-                    <button
-                      className="btn-edit"
-                      onClick={() => handleEditSchedule(schedule)}
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      className="btn-delete"
-                      onClick={() => handleDeleteSchedule(schedule.id)}
-                    >
-                      🗑️ Delete
-                    </button>
                   </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
