@@ -62,7 +62,18 @@ const Dashboard = ({
     try {
       // Refetch all plants from backend to ensure consistency
       const data = await plantsAPI.getAllPlants();
-      const mappedPlants = data.map(plant => ({
+      
+      // Ensure data is an array (handle pagination)
+      const plantsList = Array.isArray(data) ? data : (data?.results || data?.data || []);
+      if (!Array.isArray(plantsList)) {
+        console.warn('[DASHBOARD] Plant data is not an array:', data);
+        if (onNotification) {
+          onNotification(`❌ Unexpected data format from server`, 'error');
+        }
+        return;
+      }
+      
+      const mappedPlants = plantsList.map(plant => ({
         id: plant.id,
         name: plant.name,
         type: plant.type,

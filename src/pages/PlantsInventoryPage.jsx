@@ -22,7 +22,16 @@ const PlantsInventoryPage = () => {
       try {
         setLoading(true);
         setError(null);
-        const allPlants = await plantsAPI.getAllPlants();
+        const allPlantsData = await plantsAPI.getAllPlants();
+        
+        // Ensure allPlants is an array (handle pagination)
+        const allPlants = Array.isArray(allPlantsData) ? allPlantsData : (allPlantsData?.results || allPlantsData?.data || []);
+        if (!Array.isArray(allPlants)) {
+          console.warn('[INVENTORY] getAllPlants returned non-array:', allPlantsData);
+          setPlants([]);
+          return;
+        }
+        
         const mappedPlants = allPlants.map(plant => ({
           id: plant.id,
           name: plant.name,

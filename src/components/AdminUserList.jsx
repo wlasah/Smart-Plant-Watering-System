@@ -18,7 +18,16 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
     try {
       setLoadingMetrics(true);
       // Fetch all plants to calculate per-user statistics
-      const allPlants = await plantsAPI.getAllPlants();
+      const allPlantsData = await plantsAPI.getAllPlantsAdmin();
+      
+      // Ensure allPlants is an array (handle pagination)
+      const allPlants = Array.isArray(allPlantsData) ? allPlantsData : (allPlantsData?.results || allPlantsData?.data || []);
+      if (!Array.isArray(allPlants)) {
+        console.warn('[ADMIN] getAllPlantsAdmin returned non-array:', allPlantsData);
+        setUserMetrics({});
+        setLoadingMetrics(false);
+        return;
+      }
       
       const metrics = {};
       users.forEach(user => {

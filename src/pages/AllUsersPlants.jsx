@@ -19,7 +19,16 @@ const AllUsersPlants = () => {
   useEffect(() => {
     const fetchPlants = async () => {
       try {
-        const allPlants = await plantsAPI.getAllPlants();
+        const allPlantsData = await plantsAPI.getAllPlantsAdmin();
+        
+        // Ensure allPlants is an array (handle pagination)
+        const allPlants = Array.isArray(allPlantsData) ? allPlantsData : (allPlantsData?.results || allPlantsData?.data || []);
+        if (!Array.isArray(allPlants)) {
+          console.warn('[ALL_PLANTS] getAllPlantsAdmin returned non-array:', allPlantsData);
+          setPlants([]);
+          return;
+        }
+        
         const mappedPlants = allPlants.map(plant => ({
           id: plant.id,
           name: plant.name,

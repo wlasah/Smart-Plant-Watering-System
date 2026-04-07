@@ -47,9 +47,18 @@ const AnalyticsPage = () => {
           console.log('[ANALYTICS] Using user endpoint to fetch own plants...');
           plantsData = await plantsAPI.getAllPlants();
         }
-        console.log('[ANALYTICS] Plants fetched:', plantsData.length, plantsData);
         
-        const mappedPlants = plantsData.map(plant => ({
+        // Ensure plantsData is an array (handle pagination)
+        const plantsList = Array.isArray(plantsData) ? plantsData : (plantsData?.results || plantsData?.data || []);
+        if (!Array.isArray(plantsList)) {
+          console.warn('[ANALYTICS] Plants data is not an array:', plantsData);
+          setPlants([]);
+          return;
+        }
+        
+        console.log('[ANALYTICS] Plants fetched:', plantsList.length, plantsList);
+        
+        const mappedPlants = plantsList.map(plant => ({
           id: plant.id,
           name: plant.name,
           type: plant.type,
@@ -70,9 +79,18 @@ const AnalyticsPage = () => {
           console.log('[ANALYTICS] Using user endpoint to fetch own watering history...');
           historyData = await historyAPI.getHistory();
         }
-        console.log('[ANALYTICS] Watering history fetched:', historyData.length, historyData);
         
-        const mappedHistory = historyData.map(entry => ({
+        // Ensure historyData is an array (handle pagination)
+        const historyList = Array.isArray(historyData) ? historyData : (historyData?.results || historyData?.data || []);
+        if (!Array.isArray(historyList)) {
+          console.warn('[ANALYTICS] History data is not an array:', historyData);
+          setWateringHistory([]);
+          historyList = [];
+        }
+        
+        console.log('[ANALYTICS] Watering history fetched:', historyList.length, historyList);
+        
+        const mappedHistory = historyList.map(entry => ({
           id: entry.id,
           plant_id: entry.plant,
           watering_date: entry.watering_date,

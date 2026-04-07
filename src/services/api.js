@@ -1,11 +1,13 @@
 /**
  * API Service for Smart Plant Watering System Web App
- * Connects to Django backend on localhost:8000
+ * Uses environment variables for backend URL configuration
  */
 
-// Backend URL - adjust if running on different machine
-const API_BASE = 'http://localhost:8000'; // For local development
-const API_BASE_URL = `${API_BASE}/api`;
+// Get API URL from environment or use default
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
+console.log(`[API] Environment: ${process.env.REACT_APP_ENV || 'development'}`);
+console.log(`[API] Connecting to: ${API_BASE_URL}`);
 
 /**
  * Helper function to make API requests with authentication token
@@ -30,12 +32,35 @@ const fetchWithToken = async (endpoint, options = {}) => {
         headers,
       });
     } catch (networkError) {
-      console.error(`Network error on ${endpoint}:`, networkError);
+      console.error(`[API] Network error on ${endpoint}:`, networkError);
       throw {
         status: 0,
-        message: 'Network request failed. Check if Django server is running on port 8000.',
+        message: 'Network request failed. Please check your connection.',
         error: networkError.message,
       };
+    }
+    
+    if (!response.ok) {
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw {
+          status: response.status,
+          message: 'Server error - invalid response',
+          error: e.message,
+        };
+      }
+      throw {
+        status: response.status,
+        message: data.detail || data.message || 'An error occurred',
+        data,
+      };
+    }
+    
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return { success: true };
     }
     
     let data;
@@ -49,17 +74,9 @@ const fetchWithToken = async (endpoint, options = {}) => {
       };
     }
     
-    if (!response.ok) {
-      throw {
-        status: response.status,
-        message: data.detail || data.message || 'An error occurred',
-        data,
-      };
-    }
-    
     return data;
   } catch (error) {
-    console.error(`API Error on ${endpoint}:`, error);
+    console.error(`[API] Error on ${endpoint}:`, error);
     throw error;
   }
 };
