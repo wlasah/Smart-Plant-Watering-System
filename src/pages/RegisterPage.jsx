@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../styles/FormStyles.css';
 import { useRegister } from '../hooks/useRegister';
@@ -18,6 +18,17 @@ const RegisterPage = ({ onRegister }) => {
     success,
     handleSubmit
   } = useRegister(onRegister, navigate);
+  const [displayError, setDisplayError] = useState('');
+
+  useEffect(() => {
+    if (error) {
+      setDisplayError(error);
+      const timer = setTimeout(() => setDisplayError(''), 5000);
+      return () => clearTimeout(timer);
+    } else {
+      setDisplayError('');
+    }
+  }, [error]);
 
   return (
     <div className="form-page-wrapper">
@@ -71,8 +82,23 @@ const RegisterPage = ({ onRegister }) => {
               required 
             />
           </div>
-          {error && <div className="form-error">{error}</div>}
-          {success && <div className="form-success">Registration successful! <Link to="/login">Login now</Link></div>}
+          {displayError && (
+            <div className="login-error-box">
+              <span className="error-icon">❌</span>
+              <div className="error-content">
+                <p className="error-title">Registration Error</p>
+                <p className="error-message">{displayError}</p>
+              </div>
+              <button 
+                type="button"
+                className="error-close"
+                onClick={() => setDisplayError('')}
+              >
+                ✕
+              </button>
+            </div>
+          )}
+          {success && <div className="form-success">✅ Registration successful! <Link to="/login">Login now</Link></div>}
           <button type="submit" className="form-btn-large">Create Account</button>
         </form>
         <div className="form-footer">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/FormStyles.css';
 import { useLogin } from '../hooks/useLogin';
@@ -12,6 +12,19 @@ const LoginPage = ({ onLogin }) => {
     error,
     handleSubmit
   } = useLogin(onLogin);
+  const [displayError, setDisplayError] = useState('');
+
+  // Update error display when error changes
+  useEffect(() => {
+    if (error) {
+      setDisplayError(error);
+      // Auto-dismiss error after 5 seconds
+      const timer = setTimeout(() => setDisplayError(''), 5000);
+      return () => clearTimeout(timer);
+    } else {
+      setDisplayError('');
+    }
+  }, [error]);
 
   return (
     <div className="form-page-wrapper">
@@ -43,7 +56,22 @@ const LoginPage = ({ onLogin }) => {
               required 
             />
           </div>
-          {error && <div className="form-error">{error}</div>}
+          {displayError && (
+            <div className="login-error-box">
+              <span className="error-icon">❌</span>
+              <div className="error-content">
+                <p className="error-title">Login Failed</p>
+                <p className="error-message">{displayError}</p>
+              </div>
+              <button 
+                type="button"
+                className="error-close"
+                onClick={() => setDisplayError('')}
+              >
+                ✕
+              </button>
+            </div>
+          )}
           <button type="submit" className="form-btn-large">Sign In</button>
         </form>
         <div className="form-footer">

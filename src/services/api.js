@@ -90,11 +90,14 @@ export const authAPI = {
    */
   register: async (username, email, password) => {
     try {
+      // NOW: Backend handles spaces! Don't convert them
+      const cleanUsername = username.trim();
+      
       const response = await fetch(`${API_BASE_URL}/users/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username,
+          username: cleanUsername,
           email,
           password,
           password_confirm: password,
@@ -187,13 +190,16 @@ export const authAPI = {
    */
   login: async (username, password) => {
     try {
-      console.log(`[AUTH] Attempting login for user: ${username}`);
+      // NOW: Backend handles spaces! Don't convert them
+      const cleanUsername = username.trim();
+      
+      console.log(`[AUTH] Attempting login for user: ${cleanUsername}`);
       console.log(`[AUTH] Login endpoint: ${API_BASE_URL}/users/login/`);
       
       const response = await fetch(`${API_BASE_URL}/users/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: cleanUsername, password }),
       });
       
       console.log(`[AUTH] Response status: ${response.status}`);

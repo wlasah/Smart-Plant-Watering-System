@@ -210,6 +210,74 @@ html, body {
   animation: slideDown 0.3s ease;
 }
 
+/* Enhanced error box for login page */
+.login-error-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%);
+  color: #991b1b;
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px solid #fca5a5;
+  animation: slideDown 0.3s ease;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
+  position: relative;
+}
+
+.error-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+.error-content {
+  flex: 1;
+}
+
+.error-title {
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #991b1b;
+}
+
+.error-message {
+  margin: 0;
+  font-size: 13px;
+  color: #7f1d1d;
+}
+
+.error-close {
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.error-close:hover {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #991b1b;
+}
+
 .form-success {
   background-color: #c6f6d5;
   color: #22543d;
