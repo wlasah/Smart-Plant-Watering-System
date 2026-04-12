@@ -66,8 +66,14 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
             const latestDate = new Date(latest.last_watered || latest.updated_at || 0);
             return plantDate > latestDate ? plant : latest;
           });
-          const activityDate = new Date(latestPlant.last_watered || latestPlant.updated_at);
-          lastActivity = activityDate;
+          const dateStr = latestPlant.last_watered || latestPlant.updated_at;
+          if (dateStr) {
+            const activityDate = new Date(dateStr);
+            // Only set if the date is valid
+            if (!isNaN(activityDate.getTime())) {
+              lastActivity = activityDate;
+            }
+          }
         }
         
         metrics[user.id || user.username] = {
