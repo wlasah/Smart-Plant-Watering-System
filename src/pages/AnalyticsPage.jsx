@@ -18,6 +18,7 @@ const AnalyticsPage = () => {
   const [timeRange, setTimeRange] = useState('week');
   const [activeTab, setActiveTab] = useState('overview');
   const [currentUser, setCurrentUser] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
 
   // Load plants, watering history, users, and activity log from API
@@ -81,7 +82,7 @@ const AnalyticsPage = () => {
         }
         
         // Ensure historyData is an array (handle pagination)
-        const historyList = Array.isArray(historyData) ? historyData : (historyData?.results || historyData?.data || []);
+        let historyList = Array.isArray(historyData) ? historyData : (historyData?.results || historyData?.data || []);
         if (!Array.isArray(historyList)) {
           console.warn('[ANALYTICS] History data is not an array:', historyData);
           setWateringHistory([]);

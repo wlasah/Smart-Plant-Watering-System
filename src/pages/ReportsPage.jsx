@@ -5,6 +5,7 @@ import UserActivityLog from '../components/UserActivityLog';
 import '../styles/AdminDashboard.css';
 
 const ReportsPage = () => {
+  // eslint-disable-next-line no-unused-vars
   const [activityLog, setActivityLog] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 

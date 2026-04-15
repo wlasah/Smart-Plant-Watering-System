@@ -117,5 +117,7 @@ const adminAPI = {
   getAdminStats: () => fetchWithToken('/plants/admin_stats/'),
 };
 
+const apiService = { authAPI, plantsAPI, historyAPI, adminAPI };
+
 export { authAPI, plantsAPI, historyAPI, adminAPI };
-export default { authAPI, plantsAPI, historyAPI, adminAPI };
+export default apiService;

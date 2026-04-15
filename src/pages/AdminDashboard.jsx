@@ -15,6 +15,7 @@ import '../styles/AdminDashboard.css';
 
 const AdminDashboard = ({ onNotification }) => {
   const { users, loading, error, addUser, updateUser, deleteUser, resetPassword, changeRole, refetchUsers } = useUserManagement();
+  // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -28,6 +29,7 @@ const AdminDashboard = ({ onNotification }) => {
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [plants, setPlants] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [activityLog, setActivityLog] = useState([]);
   const [metricsRefreshTrigger, setMetricsRefreshTrigger] = useState(0);
 
