@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import '../styles/AdminUserList.css';
 import { adminAPI } from '../services/api';
 
-const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, onChangeRole, onAddUser, metricsRefreshTrigger }) => {
+const AdminUserList = ({ users = [], currentUser, onEdit, onDelete, onResetPassword, onChangeRole, onAddUser, metricsRefreshTrigger }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [userMetrics, setUserMetrics] = useState({});
   const [showBulkActions, setShowBulkActions] = useState(false);
@@ -394,7 +394,7 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
             </tr>
           </thead>
           <tbody>
-            {users.map(user => {
+            {Array.isArray(users) && users.map(user => {
               // NORMALIZE: Ensure user has a role property based on is_staff
               const normalizedUser = { ...user, role: user.is_staff ? 'admin' : (user.role || 'user') };
               const userId = normalizedUser.id || normalizedUser.username;
