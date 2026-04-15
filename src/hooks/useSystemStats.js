@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { adminAPI, plantsAPI } from '../services/api';
+import { adminAPI } from '../services/api';
 
 export function useSystemStats() {
   const [stats, setStats] = useState({

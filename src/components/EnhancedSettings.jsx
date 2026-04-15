@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import '../styles/EnhancedSettings.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
@@ -10,12 +10,7 @@ const EnhancedSettings = () => {
   const [savedMessage, setSavedMessage] = useState('');
   const [error, setError] = useState(null);
 
-  // Fetch settings from backend
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('auth_token');
@@ -40,7 +35,11 @@ const EnhancedSettings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   const createDefaultSettings = () => ({
     critical_threshold: 30,

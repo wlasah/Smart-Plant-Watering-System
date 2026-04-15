@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import '../styles/AdminUserList.css';
 import { plantsAPI } from '../services/api';
 
@@ -9,12 +9,7 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
   const [bulkAction, setBulkAction] = useState('');
   const [loadingMetrics, setLoadingMetrics] = useState(false);
 
-  useEffect(() => {
-    // Fetch metrics for all users
-    fetchUserMetrics();
-  }, [users, metricsRefreshTrigger]);
-
-  const fetchUserMetrics = async () => {
+  const fetchUserMetrics = useCallback(async () => {
     try {
       setLoadingMetrics(true);
       // Fetch all plants to calculate per-user statistics
@@ -137,8 +132,11 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
     } finally {
       setLoadingMetrics(false);
     }
-  };
+  }, [users]);
 
+  useEffect(() => {
+    fetchUserMetrics();
+  }, [fetchUserMetrics, metricsRefreshTrigger]);
 
   // Helper function to check if a user is the current user
   const isCurrentUser = (user) => {
@@ -272,7 +270,6 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
     switch (bulkAction) {
       case 'make_admin':
         selectedUsers.forEach(userId => {
-          const user = users.find(u => u.id === userId || u.username === userId);
           onChangeRole(userId, 'admin');
         });
         alert(`✅ Made ${selectedUsers.length} user(s) admin!`);
