@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/AllUsersPlants.css';
 
-const AllUsersPlantsTable = ({ plants }) => {
+const AllUsersPlantsTable = ({ plants = [] }) => {
   return (
     <div className="all-users-plants-table-wrapper">
       <table className="all-users-plants-table">

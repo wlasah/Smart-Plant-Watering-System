@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
-import { plantsAPI } from '../services/api';
+import { adminAPI } from '../services/api';
 import '../styles/AllUsersPlants.css';
 
 const AllUsersPlants = () => {
@@ -19,12 +19,12 @@ const AllUsersPlants = () => {
   useEffect(() => {
     const fetchPlants = async () => {
       try {
-        const allPlantsData = await plantsAPI.getAllPlantsAdmin();
+        const allPlantsData = await adminAPI.getAllPlants();
         
         // Ensure allPlants is an array (handle pagination)
         const allPlants = Array.isArray(allPlantsData) ? allPlantsData : (allPlantsData?.results || allPlantsData?.data || []);
         if (!Array.isArray(allPlants)) {
-          console.warn('[ALL_PLANTS] getAllPlantsAdmin returned non-array:', allPlantsData);
+          console.warn('[ALL_PLANTS] getAllPlants returned non-array:', allPlantsData);
           setPlants([]);
           return;
         }

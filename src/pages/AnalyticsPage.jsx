@@ -43,10 +43,10 @@ const AnalyticsPage = () => {
         let plantsData;
         if (isAdmin) {
           console.log('[ANALYTICS] Using admin endpoint to fetch all plants...');
-          plantsData = await plantsAPI.getAllPlantsAdmin();
+          plantsData = await adminAPI.getAllPlants();
         } else {
           console.log('[ANALYTICS] Using user endpoint to fetch own plants...');
-          plantsData = await plantsAPI.getAllPlants();
+          plantsData = await plantsAPI.getAll();
         }
         
         // Ensure plantsData is an array (handle pagination)
