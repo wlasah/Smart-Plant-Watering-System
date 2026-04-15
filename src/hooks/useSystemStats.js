@@ -23,8 +23,11 @@ export function useSystemStats() {
         // Fetch users from API
         console.log('[STATS] Fetching users...');
         const usersData = await adminAPI.getAllUsers();
-        const totalUsers = usersData.length;
-        console.log('[STATS] Users fetched:', totalUsers, usersData);
+        
+        // Handle paginated responses
+        const usersList = Array.isArray(usersData) ? usersData : (usersData?.results || usersData?.data || []);
+        const totalUsers = Array.isArray(usersList) ? usersList.length : 0;
+        console.log('[STATS] Users fetched:', totalUsers, usersList);
 
         // Fetch admin plant statistics (all plants across all users)
         console.log('[STATS] Fetching admin stats...');

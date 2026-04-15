@@ -23,7 +23,19 @@ export function useUserManagement() {
       }
 
       const data = await adminAPI.getAllUsers();
-      setUsers(data);
+      
+      // Handle paginated responses (results, data properties)
+      const usersList = Array.isArray(data) ? data : (data?.results || data?.data || []);
+      
+      if (!Array.isArray(usersList)) {
+        console.warn('[useUserManagement] Users data is not an array:', data);
+        setUsers([]);
+        setLoading(false);
+        return;
+      }
+      
+      console.log('[useUserManagement] Users fetched:', usersList.length);
+      setUsers(usersList);
     } catch (err) {
       console.error('Error fetching users:', err);
       setError(err.message || 'Failed to load users');

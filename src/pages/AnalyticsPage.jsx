@@ -102,8 +102,11 @@ const AnalyticsPage = () => {
         // Fetch users from API
         console.log('[ANALYTICS] Fetching users...');
         const usersData = await adminAPI.getAllUsers();
-        console.log('[ANALYTICS] Users fetched:', usersData.length, usersData);
-        setUsers(usersData);
+        
+        // Handle paginated responses
+        const usersList = Array.isArray(usersData) ? usersData : (usersData?.results || usersData?.data || []);
+        console.log('[ANALYTICS] Users fetched:', usersList.length, usersList);
+        setUsers(usersList);
 
         // Activity log - no API endpoint yet
         setActivityLog([]);
