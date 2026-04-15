@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import '../styles/AdminUserList.css';
-import { plantsAPI } from '../services/api';
+import { adminAPI } from '../services/api';
 
 const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, onChangeRole, onAddUser, metricsRefreshTrigger }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -13,7 +13,7 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
     try {
       setLoadingMetrics(true);
       // Fetch all plants to calculate per-user statistics
-      const allPlantsData = await plantsAPI.getAllPlantsAdmin();
+      const allPlantsData = await adminAPI.getAllPlants();
       
       // Ensure allPlants is an array (handle pagination)
       const allPlants = Array.isArray(allPlantsData) ? allPlantsData : (allPlantsData?.results || allPlantsData?.data || []);

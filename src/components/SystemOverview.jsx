@@ -5,8 +5,9 @@ import '../styles/SystemOverview.css';
 const SystemOverview = ({ users = [], activityLog = [] }) => {
   const { totalUsers, totalPlants, healthyPlants, needsAttentionPlants, averageMoisture, loading } = useSystemStats();
 
-  const totalAdmins = users.filter(u => u.is_staff || u.role === 'admin').length;
-  const totalRegularUsers = users.filter(u => !u.is_staff && u.role !== 'admin').length;
+  const usersList = Array.isArray(users) ? users : [];
+  const totalAdmins = usersList.filter(u => u.is_staff || u.role === 'admin').length;
+  const totalRegularUsers = usersList.filter(u => !u.is_staff && u.role !== 'admin').length;
   const totalActions = activityLog.length;
 
   if (loading) {

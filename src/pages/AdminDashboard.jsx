@@ -10,7 +10,7 @@ import SystemOverview from '../components/SystemOverview';
 import CriticalPlantsAlert from '../components/CriticalPlantsAlert';
 import PlantHealthAlerts from '../components/PlantHealthAlerts';
 import { useUserManagement } from '../hooks/useUserManagement';
-import { plantsAPI } from '../services/api';
+import { adminAPI } from '../services/api';
 import '../styles/AdminDashboard.css';
 
 const AdminDashboard = ({ onNotification }) => {
@@ -80,7 +80,7 @@ const AdminDashboard = ({ onNotification }) => {
           return;
         }
 
-        const plantsData = await plantsAPI.getAllPlantsAdmin();
+        const plantsData = await adminAPI.getAllPlants();
         
         // Ensure plantsData is an array (handle pagination)
         const plantsList = Array.isArray(plantsData) ? plantsData : (plantsData?.results || plantsData?.data || []);
