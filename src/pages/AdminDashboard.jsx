@@ -10,6 +10,7 @@ import SystemOverview from '../components/SystemOverview';
 import CriticalPlantsAlert from '../components/CriticalPlantsAlert';
 import PlantHealthAlerts from '../components/PlantHealthAlerts';
 import { useUserManagement } from '../hooks/useUserManagement';
+import { plantsAPI } from '../services/api';
 import '../styles/AdminDashboard.css';
 
 const AdminDashboard = ({ onNotification }) => {
@@ -21,12 +22,43 @@ const AdminDashboard = ({ onNotification }) => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [successDetails, setSuccessDetails] = useState(null);
+  const [successTitle, setSuccessTitle] = useState('✅ Success');
   const [selectedUser, setSelectedUser] = useState(null);
   const [tempPassword, setTempPassword] = useState('');
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [plants, setPlants] = useState([]);
   const [activityLog, setActivityLog] = useState([]);
+  const [metricsRefreshTrigger, setMetricsRefreshTrigger] = useState(0);
+
+  // Function to log admin actions to backend
+  const logAdminAction = async (actionType, targetUserId, targetUsername, details = {}) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return; // Not authenticated
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL.replace('/api', '')}/api/users/log_action/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify({
+          action_type: actionType,
+          target_user_id: targetUserId,
+          target_username: targetUsername,
+          details: details
+        })
+      });
+      
+      if (!response.ok) {
+        console.error('[AdminDashboard] Failed to log admin action:', response.statusText);
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error logging admin action:', error);
+      // Silently fail - don't interrupt user workflow
+    }
+  };
 
   useEffect(() => {
     // Load current user from localStorage (auth only)
@@ -36,12 +68,72 @@ const AdminDashboard = ({ onNotification }) => {
     }
   }, []);
 
+  // Fetch all plants for admin dashboard
+  useEffect(() => {
+    const fetchPlants = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          setPlants([]);
+          return;
+        }
+
+        const plantsData = await plantsAPI.getAllPlantsAdmin();
+        
+        // Ensure plantsData is an array (handle pagination)
+        const plantsList = Array.isArray(plantsData) ? plantsData : (plantsData?.results || plantsData?.data || []);
+        if (!Array.isArray(plantsList)) {
+          console.warn('[AdminDashboard] Plants data is not an array:', plantsData);
+          setPlants([]);
+          return;
+        }
+
+        // Map API response to component format
+        const mappedPlants = plantsList.map(plant => ({
+          id: plant.id,
+          name: plant.name,
+          type: plant.type,
+          location: plant.location,
+          moistureLevel: plant.moisture,
+          lastWatered: plant.last_watered,
+          owner: plant.owner_username || 'Unknown',
+          user_id: plant.owner,
+          description: plant.description,
+          careRequirements: {
+            waterFrequency: plant.care_requirements?.water_frequency,
+            lightRequirement: plant.care_requirements?.light_requirement,
+            temperature: plant.care_requirements?.temperature,
+            humidity: plant.care_requirements?.humidity,
+          },
+          watering_history: plant.watering_history,
+          created_at: plant.created_at,
+        }));
+
+        setPlants(mappedPlants);
+        console.log('[AdminDashboard] Loaded plants:', mappedPlants.length);
+      } catch (error) {
+        console.error('[AdminDashboard] Error fetching plants:', error);
+        setPlants([]);
+      }
+    };
+
+    fetchPlants();
+    
+    // Auto-refresh plants every 30 seconds
+    const interval = setInterval(fetchPlants, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleAddUser = async (userData) => {
     try {
       const result = await addUser(userData);
       if (result.success) {
         setIsAddModalOpen(false);
         
+        // Log admin action
+        await logAdminAction('create_user', result.user?.id, userData.username);
+        
+        setSuccessTitle('✅ User Created Successfully');
         setSuccessMessage(`New user created successfully!`);
         setSuccessDetails(
           <div>
@@ -54,6 +146,9 @@ const AdminDashboard = ({ onNotification }) => {
           </div>
         );
         setIsSuccessModalOpen(true);
+        
+        // Trigger metrics refresh
+        setMetricsRefreshTrigger(prev => prev + 1);
         
         if (onNotification) {
           onNotification(`✅ User "${userData.username}" created successfully!`, 'success');
@@ -105,6 +200,10 @@ const AdminDashboard = ({ onNotification }) => {
         setIsEditModalOpen(false);
         setSelectedUser(null);
         
+        // Log admin action
+        await logAdminAction('update_user', userId, targetUser?.username);
+        
+        setSuccessTitle('✅ User Updated Successfully');
         setSuccessMessage(`User updated successfully!`);
         
         const detailsParts = [
@@ -121,6 +220,9 @@ const AdminDashboard = ({ onNotification }) => {
           <div dangerouslySetInnerHTML={{ __html: detailsParts.join('') }} />
         );
         setIsSuccessModalOpen(true);
+        
+        // Trigger metrics refresh
+        setMetricsRefreshTrigger(prev => prev + 1);
         
         if (onNotification) {
           onNotification(`✅ User updated successfully!`, 'success');
@@ -150,6 +252,10 @@ const AdminDashboard = ({ onNotification }) => {
       try {
         const result = await deleteUser(userId);
         if (result.success) {
+          // Log admin action
+          await logAdminAction('delete_user', userId, userToDelete?.username);
+          
+          setSuccessTitle('✅ User Deleted Successfully');
           setSuccessMessage(`User "${userToDelete?.username}" deleted successfully!`);
           setSuccessDetails(
             <div>
@@ -158,6 +264,9 @@ const AdminDashboard = ({ onNotification }) => {
             </div>
           );
           setIsSuccessModalOpen(true);
+          
+          // Trigger metrics refresh
+          setMetricsRefreshTrigger(prev => prev + 1);
           
           if (onNotification) {
             onNotification(`🗑️ User "${userToDelete?.username}" deleted successfully!`, 'success');
@@ -185,7 +294,11 @@ const AdminDashboard = ({ onNotification }) => {
       if (result.success) {
         setIsPasswordResetModalOpen(false);
         
+        // Log admin action
+        await logAdminAction('reset_password', selectedUser?.id, selectedUser?.username);
+        
         // Show success modal
+        setSuccessTitle('✅ Password Reset Complete');
         setSuccessMessage(`Password reset successfully for user "${selectedUser?.username}"!`);
         setSuccessDetails(
           <div>
@@ -208,6 +321,9 @@ const AdminDashboard = ({ onNotification }) => {
           </div>
         );
         setIsSuccessModalOpen(true);
+        
+        // Trigger metrics refresh
+        setMetricsRefreshTrigger(prev => prev + 1);
         
         // Refresh users list
         setTimeout(() => {
@@ -255,6 +371,10 @@ const AdminDashboard = ({ onNotification }) => {
         const userObj = users.find(u => u.id === userId);
         const roleDisplay = newRole === 'admin' ? '👑 Admin' : '👤 User';
         
+        // Log admin action
+        await logAdminAction('change_role', userId, userObj?.username, { new_role: newRole });
+        
+        setSuccessTitle('✅ Role Changed Successfully');
         setSuccessMessage(`User role changed successfully!`);
         setSuccessDetails(
           <div>
@@ -264,6 +384,9 @@ const AdminDashboard = ({ onNotification }) => {
           </div>
         );
         setIsSuccessModalOpen(true);
+        
+        // Trigger metrics refresh
+        setMetricsRefreshTrigger(prev => prev + 1);
         
         if (onNotification) {
           onNotification(`✅ User "${userObj?.username}" role changed to ${newRole}!`, 'success');
@@ -327,6 +450,7 @@ const AdminDashboard = ({ onNotification }) => {
                 onResetPassword={handleOpenPasswordResetModal}
                 onChangeRole={handleChangeRole}
                 onAddUser={() => setIsAddModalOpen(true)}
+                metricsRefreshTrigger={metricsRefreshTrigger}
               />
             </section>
 
@@ -362,7 +486,7 @@ const AdminDashboard = ({ onNotification }) => {
 
             <SuccessNotificationModal
               isOpen={isSuccessModalOpen}
-              title="✅ Password Reset Complete"
+              title={successTitle}
               message={successMessage}
               details={successDetails}
               autoCloseSeconds={8}
@@ -370,6 +494,7 @@ const AdminDashboard = ({ onNotification }) => {
                 setIsSuccessModalOpen(false);
                 setSuccessMessage('');
                 setSuccessDetails(null);
+                setSuccessTitle('✅ Success');
               }}
             />
           </>

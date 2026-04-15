@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/AdminUserList.css';
 import { plantsAPI } from '../services/api';
 
-const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, onChangeRole, onAddUser }) => {
+const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, onChangeRole, onAddUser, metricsRefreshTrigger }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [userMetrics, setUserMetrics] = useState({});
   const [showBulkActions, setShowBulkActions] = useState(false);
@@ -12,7 +12,7 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
   useEffect(() => {
     // Fetch metrics for all users
     fetchUserMetrics();
-  }, [users]);
+  }, [users, metricsRefreshTrigger]);
 
   const fetchUserMetrics = async () => {
     try {
@@ -29,8 +29,11 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
         return;
       }
       
+      // Get token for API calls
+      const token = localStorage.getItem('token');
+      
       const metrics = {};
-      users.forEach(user => {
+      for (const user of users) {
         // Get user's plants
         const userPlants = allPlants.filter(plant => 
           plant.owner_username === user.username || plant.owner_id === user.id
@@ -58,8 +61,11 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
           engagementScore = Math.round((healthyPlants / plantCount) * 100);
         }
         
-        // Last activity: most recent watering or update
+        // Last activity: most recent watering/update OR admin action on this user
         let lastActivity = 'Never';
+        let mostRecentDate = null;
+        
+        // Check plant activities
         if (userPlants.length > 0) {
           const latestPlant = userPlants.reduce((latest, plant) => {
             const plantDate = new Date(plant.last_watered || plant.updated_at || 0);
@@ -71,9 +77,41 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
             const activityDate = new Date(dateStr);
             // Only set if the date is valid
             if (!isNaN(activityDate.getTime())) {
-              lastActivity = activityDate;
+              mostRecentDate = activityDate;
             }
           }
+        }
+        
+        // Check admin actions on this user (fetch from API)
+        if (token) {
+          try {
+            const adminActionsResponse = await fetch(
+              `${process.env.REACT_APP_API_URL}/users/get_user_actions/?target_user_id=${user.id}&limit=1`,
+              {
+                headers: { 'Authorization': `Token ${token}` }
+              }
+            );
+            
+            if (adminActionsResponse.ok) {
+              const adminActions = await adminActionsResponse.json();
+              if (adminActions.length > 0) {
+                const mostRecentAdminAction = adminActions[0];
+                const adminActionDate = new Date(mostRecentAdminAction.timestamp);
+                
+                if (!isNaN(adminActionDate.getTime())) {
+                  if (!mostRecentDate || adminActionDate > mostRecentDate) {
+                    mostRecentDate = adminActionDate;
+                  }
+                }
+              }
+            }
+          } catch (apiError) {
+            console.warn(`[AdminUserList] Could not fetch admin actions for user ${user.id}:`, apiError);
+          }
+        }
+        
+        if (mostRecentDate) {
+          lastActivity = mostRecentDate;
         }
         
         metrics[user.id || user.username] = {
@@ -82,9 +120,7 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
           engagementScore,
           lastActivity
         };
-      });
-      
-      setUserMetrics(metrics);
+      }
     } catch (err) {
       console.error('Error fetching user metrics:', err);
       // Fallback to default metrics
@@ -356,7 +392,7 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
               <th>Activity</th>
               <th>Engagement</th>
               <th>Role</th>
-              <th>Last Activity</th>
+              <th title="Last time user watered a plant, updated plant info, or was managed by admin (created, updated, deleted, password reset, role change)">Last Activity</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -434,7 +470,7 @@ const AdminUserList = ({ users, currentUser, onEdit, onDelete, onResetPassword, 
                     ) : null}
                   </td>
                   <td className="date-cell">
-                    <div className="date-cell-inner">
+                    <div className="date-cell-inner" title="Last user action (watering/plant update) or admin management action (create/update/delete/password reset/role change)">
                       {metrics.lastActivity instanceof Date
                         ? metrics.lastActivity.toLocaleDateString() + ' ' + 
                           metrics.lastActivity.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
